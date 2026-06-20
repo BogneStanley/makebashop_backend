@@ -28,10 +28,10 @@ public class Order {
     public Order(Long id, String orderNumber, Customer customer, List<OrderLineItem> orderLineItems,
             OrderStatus status, String note, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (orderNumber == null) {
-            throw new IllegalArgumentException("Order number cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order number cannot be null");
         }
         if (status == null) {
-            throw new IllegalArgumentException("Order status cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order status cannot be null");
         }
 
         this.id = id;
@@ -102,7 +102,7 @@ public class Order {
     // Update methods
     public void updateStatus(OrderStatus status) {
         if (status == null) {
-            throw new IllegalArgumentException("Order status cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order status cannot be null");
         }
         this.status = status;
         this.updatedAt = LocalDateTime.now();
@@ -111,7 +111,7 @@ public class Order {
     // Line item management
     public void addLineItem(OrderLineItem lineItem) {
         if (lineItem == null) {
-            throw new IllegalArgumentException("Order line item cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order line item cannot be null");
         }
         this.orderLineItems.add(lineItem);
         this.updatedAt = LocalDateTime.now();
@@ -119,7 +119,7 @@ public class Order {
 
     public void removeLineItem(OrderLineItem lineItem) {
         if (lineItem == null) {
-            throw new IllegalArgumentException("Order line item cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order line item cannot be null");
         }
         boolean removed = this.orderLineItems.remove(lineItem);
         if (removed) {
@@ -129,13 +129,13 @@ public class Order {
 
     public void updateLineItemQuantity(OrderLineItem lineItem, int quantity) {
         if (lineItem == null) {
-            throw new IllegalArgumentException("Order line item cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order line item cannot be null");
         }
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than 0");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Quantity must be greater than 0");
         }
         if (!this.orderLineItems.contains(lineItem)) {
-            throw new IllegalArgumentException("Line item not found in order");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Line item not found in order");
         }
 
         lineItem.updateQuantity(quantity);

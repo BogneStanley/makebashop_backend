@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "app.upload-dir",
+    "type": "java.lang.String",
+    "description": "Path where files are uploaded"
+  },
+  {
+    "name": "app.currency-code",
+    "type": "java.lang.String",
+    "description": "Currency code for the shop"
+  },
+  {
+    "name": "jwt.expiration",
+    "type": "java.lang.String",
+    "description": "JWT token expiration time in seconds"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "JWT secret key"
+  }
+]}

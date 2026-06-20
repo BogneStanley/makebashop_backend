@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cm.bognestanley.shop_backend.application.common.dto.FileContent;
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.application.common.port.FileStoragePort;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 import cm.bognestanley.shop_backend.domain.product.entity.ProductImage;
 import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
@@ -25,7 +27,7 @@ public class BulkAddImageUsecase {
     @Transactional
     public Product execute(Long productId, List<FileContent> images) {
         var existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found with ID: " + productId));
 
         for (FileContent image : images) {
             var storedFile = fileStoragePort.uploadFile(image);

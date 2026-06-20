@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.common.valueObject.Money;
 
 public class Product {
@@ -20,23 +22,23 @@ public class Product {
     public Product(Long id, String name, String description, List<ProductVariant> productVariants, List<ProductImage> images,
             LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Product name cannot be null or empty");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Name cannot be null or empty");
         }
         if (description == null) {
-            throw new IllegalArgumentException("Product description cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Description cannot be null");
         }
         if (productVariants == null) {
-            throw new IllegalArgumentException("Product variants list cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product variants list cannot be null");
         }
         if (images == null) {
-            throw new IllegalArgumentException("Product images list cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product images list cannot be null");
         }
 
         if (!productVariants.isEmpty()) {
             var firstCurrency = productVariants.get(0).getPrice().currency();
             for (var v : productVariants) {
                 if (!v.getPrice().currency().equals(firstCurrency)) {
-                    throw new IllegalArgumentException("All product variants must have the same currency");
+                    throw new DomainErrorException(ErrorCode.INVALID_INPUT, "All product variants must have the same currency");
                 }
             }
         }
@@ -103,19 +105,19 @@ public class Product {
 
     public void addVariant(ProductVariant variant) {
         if (variant == null) {
-            throw new IllegalArgumentException("Product variant cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product variant cannot be null");
         }
 
         boolean skuExists = productVariants.stream()
                 .anyMatch(v -> v.getSku().equalsIgnoreCase(variant.getSku()));
         if (skuExists) {
-            throw new IllegalArgumentException("Product variant with SKU " + variant.getSku() + " already exists");
+            throw new DomainErrorException(ErrorCode.PRODUCT_VARIANT_SKU_ALREADY_EXIST, "Product variant with SKU " + variant.getSku() + " already exists");
         }
 
         if (!productVariants.isEmpty()) {
             var productCurrency = productVariants.get(0).getPrice().currency();
             if (!variant.getPrice().currency().equals(productCurrency)) {
-                throw new IllegalArgumentException("Variant currency " + variant.getPrice().currency() +
+                throw new DomainErrorException(ErrorCode.ALL_PRODUCT_VARIANT_MUST_HAVE_SAME_CURRENCY, "Variant currency " + variant.getPrice().currency() +
                         " does not match product currency " + productCurrency);
             }
         }
@@ -126,7 +128,7 @@ public class Product {
 
     public void addVariants(List<ProductVariant> variants) {
         if (variants == null) {
-            throw new IllegalArgumentException("Variants list cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Variants list cannot be null");
         }
         for (ProductVariant variant : variants) {
             addVariant(variant);
@@ -136,13 +138,13 @@ public class Product {
 
     public void removeVariantBySKU(String sku) {
         if (sku == null || sku.isBlank()) {
-            throw new IllegalArgumentException("SKU cannot be null or empty");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "SKU cannot be null or empty");
         }
 
         boolean removed = productVariants.removeIf(v -> v.getSku().equalsIgnoreCase(sku));
 
         if (!removed) {
-            throw new IllegalArgumentException("Product variant with SKU " + sku + " not found");
+            throw new DomainErrorException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, "Product variant with SKU " + sku + " not found");
         }
 
         this.updatedAt = LocalDateTime.now();
@@ -157,12 +159,12 @@ public class Product {
         
         // Check if any variants were removed
         if (productVariants.size() == originalSize) {
-            throw new IllegalArgumentException("No variants found with the given IDs");
+            throw new DomainErrorException(ErrorCode.PRODUCT_VARIANT_NOT_FOUND, "No variants found with the given IDs");
         }
         
         // Check if there's still at least one variant
         if (productVariants.isEmpty()) {
-            throw new IllegalArgumentException("Cannot delete all variants. Product must have at least one variant.");
+            throw new DomainErrorException(ErrorCode.PRODUCT_MUST_HAVE_AT_LEAST_ONE_VARIANT, "Cannot delete all variants. Product must have at least one variant.");
         }
         
         this.updatedAt = LocalDateTime.now();
@@ -170,7 +172,7 @@ public class Product {
 
     public void addImage(ProductImage image) {
         if (image == null) {
-            throw new IllegalArgumentException("Product image cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product image cannot be null");
         }
         if (images.isEmpty()) {
             image.markAsPrimary();
@@ -182,10 +184,10 @@ public class Product {
 
     public void updateImagePosition(Long imageId, int newPosition) {
         if (imageId == null) {
-            throw new IllegalArgumentException("Image ID cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Image ID cannot be null");
         }
         if (newPosition < 1 || newPosition > images.size()) {
-            throw new IllegalArgumentException("Invalid position. Position must be between 1 and " + images.size());
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Invalid position. Position must be between 1 and " + images.size());
         }
         if (images.size() == 1) {
             return; // nothing to reorder
@@ -197,7 +199,7 @@ public class Product {
                 .findFirst();
         
         if (!imageOpt.isPresent()) {
-            throw new IllegalArgumentException("Product image with ID " + imageId + " not found");
+            throw new DomainErrorException(ErrorCode.IMAGE_NOT_FOUND, "Product image with ID " + imageId + " not found");
         }
         
         ProductImage imageToMove = imageOpt.get();
@@ -222,7 +224,7 @@ public class Product {
 
     public void updateImagesPosition(Map<Long, Integer> commands) {
         if (commands == null) {
-            throw new IllegalArgumentException("Commands list cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Commands list cannot be null");
         }
         if (commands.isEmpty()) {
             return; // nothing to reorder
@@ -238,7 +240,7 @@ public class Product {
                     .findFirst();
             
             if (!imageOpt.isPresent()) {
-                throw new IllegalArgumentException("Product image with ID " + imageId + " not found");
+                throw new DomainErrorException(ErrorCode.IMAGE_NOT_FOUND, "Product image with ID " + imageId + " not found");
             }
             
             imagesToMove.add(imageOpt.get());
@@ -272,14 +274,14 @@ public class Product {
 
     public void removeImage(Long imageId) {
         if (imageId == null) {
-            throw new IllegalArgumentException("Image ID cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Image ID cannot be null");
         }
         Optional<ProductImage> imageOpt = images.stream()
                 .filter(img -> img.getId().equals(imageId))
                 .findFirst();
         
         if (!imageOpt.isPresent()) {
-            throw new IllegalArgumentException("Product image with ID " + imageId + " not found");
+            throw new DomainErrorException(ErrorCode.IMAGE_NOT_FOUND, "Product image with ID " + imageId + " not found");
         }
         
         ProductImage imageToRemove = imageOpt.get();
@@ -300,7 +302,7 @@ public class Product {
 
     public void updateImages(List<ProductImage> newImages) {
         if (newImages == null) {
-            throw new IllegalArgumentException("Product images list cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product images list cannot be null");
         }
         this.images = newImages;
         this.updatedAt = LocalDateTime.now();
@@ -331,7 +333,7 @@ public class Product {
 
     public void addImages(List<ProductImage> productImages) {
         if(productImages == null) {
-            throw new IllegalArgumentException("Product images cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product images cannot be null");
         }
         for(ProductImage productImage : productImages) {
             this.addImage(productImage);
@@ -347,7 +349,7 @@ public class Product {
                     .findFirst();
             
             if (!imageOpt.isPresent()) {
-                throw new IllegalArgumentException("Product image with ID " + imageId + " not found");
+                throw new DomainErrorException(ErrorCode.IMAGE_NOT_FOUND, "Product image with ID " + imageId + " not found");
             }
             removedImages.add(imageOpt.get());
             this.images.remove(imageOpt.get());

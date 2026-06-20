@@ -2,7 +2,8 @@ package cm.bognestanley.shop_backend.application.order.usecase;
 
 import org.springframework.stereotype.Service;
 
-import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.order.entity.Order;
 import cm.bognestanley.shop_backend.domain.order.repository.OrderRepository;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
@@ -22,7 +23,7 @@ public class MarkOrderAsPaidUsecase {
 
     @Transactional
     public Order execute(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new DomainErrorException(null));
+        Order order = orderRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         order.markAsPaid();
 

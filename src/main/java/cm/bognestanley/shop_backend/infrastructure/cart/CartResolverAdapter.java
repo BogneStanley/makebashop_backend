@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import cm.bognestanley.shop_backend.application.cart.port.CartResolver;
 import cm.bognestanley.shop_backend.domain.cart.entity.Cart;
 import cm.bognestanley.shop_backend.domain.cart.repository.CartRepository;
+import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 
 @Component
@@ -44,7 +46,7 @@ public class CartResolverAdapter implements CartResolver {
     @Override
     public Cart resolveCart(Long cartId) {
         return cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+                .orElseThrow(() -> new DomainErrorException(ErrorCode.CART_NOT_FOUND, "Cart not found"));
     }
 
     private Cart createNewCart(Long userId) {

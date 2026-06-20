@@ -2,18 +2,21 @@ package cm.bognestanley.shop_backend.domain.common.valueObject;
 
 import java.math.BigDecimal;
 
+import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
+
 public record Money(BigDecimal amount, String currency) {
     
 
     public Money {
         if (amount == null) {
-            throw new IllegalArgumentException("Amount cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT,"Amount cannot be null");
         }
         if (currency == null) {
-            throw new IllegalArgumentException("Currency cannot be null");
+            throw new DomainErrorException(ErrorCode.CURRENCY_CANNOT_BE_NULL,"Currency cannot be null");
         }
         if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Amount cannot be negative");
+            throw new DomainErrorException(ErrorCode.AMOUNT_CANNOT_BE_NEGATIVE,"Amount cannot be negative");
         }
     }
 
@@ -32,18 +35,18 @@ public record Money(BigDecimal amount, String currency) {
         checkCurrency(other);
         BigDecimal newAmount = this.amount.subtract(other.amount);
         if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Resulting amount cannot be negative");
+            throw new DomainErrorException(ErrorCode.AMOUNT_CANNOT_BE_NEGATIVE,"Resulting amount cannot be negative");
         }
         return new Money(newAmount, this.currency);
     }
 
     public Money multiply(BigDecimal factor) {
         if (factor == null) {
-            throw new IllegalArgumentException("Factor cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Factor cannot be null");
         }
         BigDecimal newAmount = this.amount.multiply(factor);
         if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Resulting amount cannot be negative");
+            throw new DomainErrorException(ErrorCode.AMOUNT_CANNOT_BE_NEGATIVE, "Resulting amount cannot be negative");
         }
         return new Money(newAmount, this.currency);
     }
@@ -64,10 +67,10 @@ public record Money(BigDecimal amount, String currency) {
 
     private void checkCurrency(Money other) {
         if (other == null) {
-            throw new IllegalArgumentException("Other money cannot be null");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Other money cannot be null");
         }
         if (!this.currency.equals(other.currency)) {
-            throw new IllegalArgumentException("Currencies must match: " + this.currency + " vs " + other.currency);
+            throw new DomainErrorException(ErrorCode.CURRENCY_MISMATCH, "Currencies must match: " + this.currency + " vs " + other.currency);
         }
     }
 }

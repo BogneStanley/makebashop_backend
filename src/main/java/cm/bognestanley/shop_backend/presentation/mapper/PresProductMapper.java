@@ -25,7 +25,7 @@ import cm.bognestanley.shop_backend.presentation.dto.response.product.ProductVar
 @Component
 public class PresProductMapper {
 
-    @Value("${app.currencyCode:FCFA}")
+    @Value("${app.currency-code:FCFA}")
     private String currency;
 
     public ProductResponse toResponse(Product product) {

@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.application.product.dto.CreateProductVariantCommand;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
-import cm.bognestanley.shop_backend.domain.product.exception.ProductNotFoundException;
 import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 
 @Service
@@ -20,7 +21,7 @@ public class BulkAddVariantUsecase {
 
     public Product execute(Long productId, List<CreateProductVariantCommand> variants) {
         var existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product not found"));
         
         for (CreateProductVariantCommand variant : variants) {
             existingProduct.addVariant(variant.toDomainEntity());

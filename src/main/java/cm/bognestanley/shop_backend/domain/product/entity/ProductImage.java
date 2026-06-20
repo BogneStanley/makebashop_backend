@@ -1,5 +1,8 @@
 package cm.bognestanley.shop_backend.domain.product.entity;
 
+import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
+
 public class ProductImage {
         private Long id;
         private String url;
@@ -11,7 +14,7 @@ public class ProductImage {
 
     public ProductImage(Long id, String url, String storageKey, String contentType, String fileName, boolean isPrimary, int position) {
         if (url == null || url.isBlank()) {
-            throw new IllegalArgumentException("Image URL cannot be null or empty");
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Image URL cannot be null or empty");
         }
         this.id = id;
         this.url = url;

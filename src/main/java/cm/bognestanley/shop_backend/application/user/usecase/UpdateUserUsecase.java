@@ -2,11 +2,11 @@ package cm.bognestanley.shop_backend.application.user.usecase;
 
 import org.springframework.stereotype.Service;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.application.common.port.PasswordEncoderPort;
 import cm.bognestanley.shop_backend.application.user.dto.UpdateUserCommand;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.user.entity.User;
-import cm.bognestanley.shop_backend.domain.user.exception.EmailAlreadyExistsException;
-import cm.bognestanley.shop_backend.domain.user.exception.UserNotFoundException;
 import cm.bognestanley.shop_backend.domain.user.repository.UserRepository;
 
 @Service
@@ -22,17 +22,17 @@ public class UpdateUserUsecase {
 
     public User execute(UpdateUserCommand command) {
         if (command == null || command.id() == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "User ID cannot be null");
         }
 
         User existingUser = userRepository.findById(command.id())
-                .orElseThrow(() -> new UserNotFoundException("User with ID " + command.id() + " not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND, "User with ID " + command.id() + " not found"));
 
         String normalizedEmail = normalizeEmail(command.email());
         if (normalizedEmail != null
                 && !normalizedEmail.equalsIgnoreCase(existingUser.getEmail())
                 && userRepository.existsByEmail(normalizedEmail)) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new ApplicationException(ErrorCode.USER_ALREADY_EXIST, "Email already exists");
         }
 
         existingUser.updateProfile(normalizedEmail, command.firstName(), command.lastName(), command.avatar(), command.role());

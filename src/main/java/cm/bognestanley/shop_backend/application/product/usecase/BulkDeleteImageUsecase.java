@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.application.common.port.FileStoragePort;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 import cm.bognestanley.shop_backend.domain.product.entity.ProductImage;
-import cm.bognestanley.shop_backend.domain.product.exception.ProductNotFoundException;
 import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 
 @Service
@@ -23,7 +24,7 @@ public class BulkDeleteImageUsecase {
     
     public Product execute(Long productId, List<Long> imageIds) {
         var existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product with ID " + productId + " not found"));
         
         List<ProductImage> removedImages = existingProduct.removeImagesByIds(imageIds);
         for (ProductImage image : removedImages) {

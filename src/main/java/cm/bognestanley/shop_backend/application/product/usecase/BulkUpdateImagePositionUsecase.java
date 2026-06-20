@@ -6,9 +6,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.application.product.dto.UpdateImagePositionCommand;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
-import cm.bognestanley.shop_backend.domain.product.exception.ProductNotFoundException;
 import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 
 @Service
@@ -22,7 +23,7 @@ public class BulkUpdateImagePositionUsecase {
 
     public Product execute(Long productId, List<UpdateImagePositionCommand> commands) {
         var existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product with ID " + productId + " not found"));
 
         Map<Long, Integer> commandsMap = commands.stream()
                 .collect(

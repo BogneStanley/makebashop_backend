@@ -1,5 +1,7 @@
 package cm.bognestanley.shop_backend.application.product.usecase;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.common.valueObject.Money;
 import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
@@ -28,7 +30,7 @@ public class SearchProductsUsecase {
             PaginationAttribute paginationAttribute) {
 
         if (paginationAttribute == null) {
-            throw new IllegalArgumentException("Pagination attributes cannot be null");
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "Pagination attributes cannot be null");
         }
 
         Money minPriceVal = null;
@@ -36,7 +38,7 @@ public class SearchProductsUsecase {
 
         if (minPrice != null || maxPrice != null) {
             if (currencyCode == null || currencyCode.isBlank()) {
-                throw new IllegalArgumentException("Currency code cannot be null or empty when searching by price range");
+                throw new ApplicationException(ErrorCode.INVALID_INPUT, "Currency code cannot be null or empty when searching by price range");
             }
             if (minPrice != null) {
                 minPriceVal = Money.of(minPrice, currencyCode);

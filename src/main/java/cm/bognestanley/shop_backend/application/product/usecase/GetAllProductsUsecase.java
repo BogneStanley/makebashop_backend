@@ -1,5 +1,7 @@
 package cm.bognestanley.shop_backend.application.product.usecase;
 
+import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
+import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
@@ -17,7 +19,7 @@ public class GetAllProductsUsecase {
 
     public PaginatedEntity<Product> execute(PaginationAttribute paginationAttribute) {
         if (paginationAttribute == null) {
-            throw new IllegalArgumentException("Pagination attributes cannot be null");
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "Pagination attributes cannot be null");
         }
         return productRepository.findAll(paginationAttribute);
     }
