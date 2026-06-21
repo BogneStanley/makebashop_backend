@@ -12,6 +12,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +41,7 @@ public class GlobalExceptionHandler {
                 .body(ErrorDataWrapper.error(ex.getMessage(), ex.getErrorCode().getCode()));
     }
 
-        @ExceptionHandler(ApplicationException.class)
+    @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleApplicationException(ApplicationException ex) {
         Integer status = ex.getErrorCode().getHttpStatusCode() != null
                 ? ex.getErrorCode().getHttpStatusCode()
@@ -55,7 +57,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleStorageException(StorageException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorDataWrapper.error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorDataWrapper.error(ex.getMessage(), "STORAGE_ERROR"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -64,9 +67,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorDataWrapper.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorDataWrapper<?>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorDataWrapper.error(ex.getMessage(), "MAX_UPLOAD_SIZE_ERROR"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleException(Exception ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorDataWrapper.error(ex.getMessage()));
     }
+
 }

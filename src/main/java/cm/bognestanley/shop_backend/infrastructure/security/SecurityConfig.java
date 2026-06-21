@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/cart/**").permitAll()
                         .requestMatchers(HttpMethod.GET ,"/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST ,"/api/v1/orders/checkout").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",

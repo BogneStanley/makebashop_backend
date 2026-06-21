@@ -13,10 +13,14 @@ public class HeaderCartContextProvider {
 
     Optional<Long> getCartIdFromHeader() {
 
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
                 .getRequest();
+
         String cartIdHeader = request.getHeader("X-Cart-Id");
-        return Optional.ofNullable(cartIdHeader)
+
+        if (cartIdHeader.isEmpty()) return Optional.empty();
+
+        return Optional.of(cartIdHeader)
                 .map(Long::valueOf);
 
     }

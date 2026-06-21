@@ -36,6 +36,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -96,6 +97,7 @@ public class ProductController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create product")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product created"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -124,6 +126,7 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete product by ID")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product deleted"),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -137,6 +140,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update product by ID")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -153,6 +157,7 @@ public class ProductController {
 
     @PutMapping("/{productId}/variants/{variantId}")
     @Operation(summary = "Update product variant")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product variant updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -171,6 +176,7 @@ public class ProductController {
 
     @PostMapping("/{productId}/variants")
     @Operation(summary = "Bulk add product variants")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product variants added"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -187,6 +193,7 @@ public class ProductController {
 
     @DeleteMapping("/{productId}/variants")
     @Operation(summary = "Delete product variant")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product variant deleted"),
             @ApiResponse(responseCode = "404", description = "Product variant not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -203,6 +210,7 @@ public class ProductController {
 
     @DeleteMapping("/{productId}/images")
     @Operation(summary = "Delete product image")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product image deleted"),
             @ApiResponse(responseCode = "404", description = "Product image not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -219,6 +227,7 @@ public class ProductController {
 
     @PostMapping(value = "/{productId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Add images to product")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product images added"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -235,6 +244,7 @@ public class ProductController {
 
     @PutMapping("/{productId}/images/positions")
     @Operation(summary = "Update product image positions")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product image updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
@@ -252,6 +262,7 @@ public class ProductController {
 
     @PutMapping("/{productId}/images/{imageId}/primary")
     @Operation(summary = "Set image as primary")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product image set as primary"),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
