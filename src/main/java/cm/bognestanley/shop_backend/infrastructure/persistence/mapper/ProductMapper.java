@@ -19,6 +19,12 @@ import cm.bognestanley.shop_backend.infrastructure.persistence.entity.product.Pr
 @Component
 public class ProductMapper {
 
+    private final CategoryMapper categoryMapper;
+
+    public ProductMapper(CategoryMapper categoryMapper) {
+        this.categoryMapper = categoryMapper;
+    }
+
     public ProductJpaEntity toJpa(Product product) {
         ProductJpaEntity productJpaEntity = ProductJpaEntity.builder()
                 .id(product.getId())
@@ -28,6 +34,7 @@ public class ProductMapper {
                 .updatedAt(product.getUpdatedAt())
                 .variants(new HashSet<>())
                 .images(new HashSet<>())
+                .categories(product.getCategories().stream().map(categoryMapper::toJpaEntity).collect(Collectors.toSet()))
                 .build();
 
         if (product.getProductVariants() != null) {
@@ -54,6 +61,7 @@ public class ProductMapper {
                 save.getDescription(),
                 save.getVariants().stream().map(this::toProductVariantDomain).collect(Collectors.toList()),
                 save.getImages().stream().map(this::toProductImageDomain).collect(Collectors.toList()),
+                save.getCategories().stream().map(categoryMapper::toDomain).toList(),
                 save.getCreatedAt(),
                 save.getUpdatedAt());
     }

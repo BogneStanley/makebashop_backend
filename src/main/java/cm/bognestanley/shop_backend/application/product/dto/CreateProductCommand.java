@@ -8,5 +8,6 @@ public record CreateProductCommand(
     String name,
     String description,
     List<CreateProductVariantCommand> productVariants,
+    List<Long> categories,
     List<FileContent> images
 ) {}

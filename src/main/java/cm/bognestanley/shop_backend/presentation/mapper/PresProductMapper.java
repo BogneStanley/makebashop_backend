@@ -28,6 +28,12 @@ public class PresProductMapper {
     @Value("${app.currency-code:FCFA}")
     private String currency;
 
+    private final PresCategoryMapper categoryMapper;
+
+    public PresProductMapper(PresCategoryMapper categoryMapper) {
+        this.categoryMapper = categoryMapper;
+    }
+
     public ProductResponse toResponse(Product product) {
         if (product == null) {
             return null;
@@ -47,6 +53,7 @@ public class PresProductMapper {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+                product.getCategories().stream().map(categoryMapper::toCategoryResponse).toList(),
                 imageResponses,
                 variantResponses);
     }
@@ -84,6 +91,7 @@ public class PresProductMapper {
                 request.name(),
                 request.description(),
                 request.productVariants().stream().map(this::toCreateProductVariantCommand).toList(),
+                request.categoryIds(),
                 images);
     }
 
@@ -101,7 +109,7 @@ public class PresProductMapper {
     }
 
     public UpdateProductCommand toUpdateProductCommand(Long id, UpdateProductRequest request) {
-        return new UpdateProductCommand(id, request.name(), request.description());
+        return new UpdateProductCommand(id, request.name(), request.description(), request.categoryIds());
     }
 
     public UpdateImagePositionCommand toUpdateImagePositionCommand(UpdateImagePositionRequest request) {

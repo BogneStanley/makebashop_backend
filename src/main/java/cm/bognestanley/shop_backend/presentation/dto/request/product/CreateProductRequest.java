@@ -11,6 +11,14 @@ public record CreateProductRequest(
 
         @NotBlank(message = "Product description is required") String description,
 
+        List<Long> categoryIds,
+
         @NotEmpty(message = "Product variants are required") @Valid List<ProductVariantRequest> productVariants) {
+
+    public CreateProductRequest {
+        if (categoryIds == null){
+            categoryIds = List.of();
+        }
+    }
 
 }

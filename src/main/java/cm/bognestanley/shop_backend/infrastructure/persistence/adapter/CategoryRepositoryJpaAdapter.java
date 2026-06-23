@@ -42,6 +42,11 @@ public class CategoryRepositoryJpaAdapter implements CategoryRepository {
     }
 
     @Override
+    public List<Category> findByIds(List<Long> categoryIds) {
+        return categoryJpaRepository.findAllById(categoryIds).stream().map(categoryMapper::toDomain).toList();
+    }
+
+    @Override
     public boolean existByName(String name) {
         return categoryJpaRepository.existsByName(name);
     }

@@ -5,6 +5,8 @@ import cm.bognestanley.shop_backend.application.common.dto.StoredFile;
 import cm.bognestanley.shop_backend.application.common.port.FileStoragePort;
 import cm.bognestanley.shop_backend.application.product.dto.CreateProductCommand;
 import cm.bognestanley.shop_backend.application.product.dto.CreateProductVariantCommand;
+import cm.bognestanley.shop_backend.domain.category.entity.Category;
+import cm.bognestanley.shop_backend.domain.category.repository.CategoryRepository;
 import cm.bognestanley.shop_backend.domain.common.valueObject.Money;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 import cm.bognestanley.shop_backend.domain.product.entity.ProductImage;
@@ -13,19 +15,24 @@ import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CreateProductUsecase {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final FileStoragePort fileStoragePort;
 
-    public CreateProductUsecase(ProductRepository productRepository, FileStoragePort fileStoragePort){
+    public CreateProductUsecase(ProductRepository productRepository, CategoryRepository categoryRepository, FileStoragePort fileStoragePort){
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
         this.fileStoragePort = fileStoragePort;
     }
 
     public Product execute(CreateProductCommand command){
-        
+
+        List<Category> categories = categoryRepository.findByIds(command.categories());
 
         Product product = new Product(
             command.name(),
@@ -64,6 +71,8 @@ public class CreateProductUsecase {
                 product.addVariant(productVariant);
             }
         }
+
+        product.addCategories(categories);
         
         return productRepository.save(product);
     }

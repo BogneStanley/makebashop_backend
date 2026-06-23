@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import cm.bognestanley.shop_backend.domain.category.entity.Category;
 import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
 import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.common.valueObject.Money;
@@ -16,11 +17,12 @@ public class Product {
         private String description;
         private List<ProductVariant> productVariants;
         private List<ProductImage> images;
+        private List<Category> categories;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
     public Product(Long id, String name, String description, List<ProductVariant> productVariants, List<ProductImage> images,
-            LocalDateTime createdAt, LocalDateTime updatedAt) {
+            List<Category> categories, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (name == null || name.isBlank()) {
             throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Name cannot be null or empty");
         }
@@ -32,6 +34,9 @@ public class Product {
         }
         if (images == null) {
             throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product images list cannot be null");
+        }
+        if (categories == null) {
+            throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Product Categories list cannot be null");
         }
 
         if (!productVariants.isEmpty()) {
@@ -47,13 +52,14 @@ public class Product {
         this.description = description;
         this.productVariants = productVariants;
         this.images = images;
+        this.categories = categories;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
 
     public Product(String name, String description) {
-        this(null, name, description, new ArrayList<>(), new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now());
+        this(null, name, description, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now());
     }
 
     public Long getId() {
@@ -66,6 +72,10 @@ public class Product {
 
     public String getDescription() {
         return description;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
     }
 
     public List<ProductVariant> getProductVariants() {
@@ -340,6 +350,30 @@ public class Product {
         }
     }
 
+    public void addCategories(List<Category> categories){
+        this.categories.addAll(categories);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void addCategory(Category category){
+        this.categories.add(category);
+        this.updatedAt = LocalDateTime.now();
+
+    }
+
+    public void keepCategoryByIds(List<Long> categoryIds){
+        List<Category> categoryToRemove = this.categories
+                .stream()
+                .filter(category -> !categoryIds.contains(category.getId()))
+                .toList();
+        this.categories.removeAll(categoryToRemove);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void replaceCategories(List<Category> categories){
+        this.categories = categories;
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public List<ProductImage> removeImagesByIds(List<Long> imageIds) {
         List<ProductImage> removedImages = new ArrayList<>();

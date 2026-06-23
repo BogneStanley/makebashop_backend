@@ -1,13 +1,7 @@
 package cm.bognestanley.shop_backend.infrastructure.persistence.entity.product;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import cm.bognestanley.shop_backend.infrastructure.persistence.entity.category.CategoryJpaEntity;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -43,5 +37,15 @@ public class ProductJpaEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductImageJpaEntity> images;
+
+    @ManyToMany(cascade = {
+            CascadeType.MERGE
+    })
+    @JoinTable(
+            name = "product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<CategoryJpaEntity> categories;
 
 }

@@ -1,7 +1,10 @@
 package cm.bognestanley.shop_backend.infrastructure.persistence.entity.category;
 
+import cm.bognestanley.shop_backend.infrastructure.persistence.entity.product.ProductJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -20,4 +23,7 @@ public class CategoryJpaEntity {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @ManyToMany(mappedBy = "categories")
+    private List<ProductJpaEntity> products;
 }
