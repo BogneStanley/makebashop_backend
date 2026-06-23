@@ -17,7 +17,9 @@ public enum ErrorCode {
     AMOUNT_CANNOT_BE_NEGATIVE("AMOUNT_CANNOT_BE_NEGATIVE", "Amount cannot be negative", 400),
     CURRENCY_CANNOT_BE_NULL("CURRENCY_CANNOT_BE_NULL", "Currency cannot be null", 400),
     ORDER_NOT_FOUND("ORDER_NOT_FOUND", "Order not found", 404),
-    CURRENCY_MISMATCH("CURRENCY_MISMATCH", "Currency mismatch", 400);
+    CURRENCY_MISMATCH("CURRENCY_MISMATCH", "Currency mismatch", 400),
+    CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Category not found" , 404),
+    CATEGORY_ALREADY_EXIST_WITH_NAME("CATEGORY_ALREADY_EXIST_WITH_NAME","Category already exist with this name", 409);
     
     private final String code;
     private final String message;
