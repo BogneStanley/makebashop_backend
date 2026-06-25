@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -50,7 +51,7 @@ public class ProductController {
     private final ProductFacade productFacade;
 
     @GetMapping()
-    @Operation(summary = "Get all products")
+    @Operation(summary = "Get all active products (public)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products found"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
@@ -64,8 +65,27 @@ public class ProductController {
         return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
     }
 
+    @GetMapping("/managed")
+    @Operation(summary = "Get all products including inactive (authenticated)")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> getAllManagedProducts(
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        PaginatedEntity<ProductResponse> paginatedEntity = productFacade.getAllManagedProducts(isActive, page, size,
+                sortBy, sortOrder);
+        return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
+    }
+
     @GetMapping("/search")
-    @Operation(summary = "Search products")
+    @Operation(summary = "Search active products (public)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products found"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
@@ -84,8 +104,31 @@ public class ProductController {
         return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
     }
 
+    @GetMapping("/managed/search")
+    @Operation(summary = "Search all products including inactive (authenticated)")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> searchManagedProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(required = false) Boolean isActive) {
+        PaginatedEntity<ProductResponse> paginatedEntity = productFacade.searchManagedProducts(name, minPrice, maxPrice,
+                inStock, isActive, page, size, sortBy, sortOrder);
+        return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
+    }
+
     @GetMapping("/{id}")
-    @Operation(summary = "Get product by ID")
+    @Operation(summary = "Get active product by ID (public)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product found"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
@@ -153,6 +196,34 @@ public class ProductController {
         ProductResponse productResponse = productFacade.updateProduct(id, request);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_UPDATED", "Product updated successfully"));
+    }
+
+    @PatchMapping("/{id}/activate")
+    @Operation(summary = "Activate product by ID")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product activated"),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<ProductResponse>> activateProduct(@PathVariable Long id) {
+        ProductResponse productResponse = productFacade.activateProduct(id);
+        return ResponseEntity
+                .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_ACTIVATED", "Product activated successfully"));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    @Operation(summary = "Deactivate product by ID")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product deactivated"),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<ProductResponse>> deactivateProduct(@PathVariable Long id) {
+        ProductResponse productResponse = productFacade.desactivateProduct(id);
+        return ResponseEntity
+                .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_DEACTIVATED", "Product deactivated successfully"));
     }
 
     @PutMapping("/{productId}/variants/{variantId}")

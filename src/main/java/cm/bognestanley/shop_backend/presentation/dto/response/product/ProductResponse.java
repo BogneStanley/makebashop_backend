@@ -8,6 +8,7 @@ public record ProductResponse(
         Long id,
         String name,
         String description,
+        boolean isActive,
         List<CategoryResponse> categories,
         List<ProductImageResponse> images,
         List<ProductVariantResponse> productVariants
@@ -18,6 +19,7 @@ public record ProductResponse(
                 this.id,
                 this.name,
                 this.description,
+                this.isActive,
                 this.categories,
                 this.images,
                 variants

@@ -49,17 +49,19 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
     }
 
     @Override
-    public PaginatedEntity<Product> findAll(PaginationAttribute paginationAttribute) {
+    public PaginatedEntity<Product> findAll(PaginationAttribute paginationAttribute, Boolean isActive) {
         Pageable pageable = PageRequest.of(
                 paginationAttribute.pageNumber(),
                 paginationAttribute.pageSize(),
                 Sort.by(Direction.fromString(paginationAttribute.sort().direction()), paginationAttribute.sort().property()));
-        Page<ProductJpaEntity> page = productJpaRepository.findAll(pageable);
+        Page<ProductJpaEntity> page = isActive == null
+                ? productJpaRepository.findAll(pageable)
+                : productJpaRepository.findAll(ProductSpecification.hasActiveStatus(isActive), pageable);
         return productMapper.toPaginatedDomain(page);
     }
 
     @Override
-    public PaginatedEntity<Product> search(String name, Money minPrice, Money maxPrice,Boolean inStock,
+    public PaginatedEntity<Product> search(String name, Money minPrice, Money maxPrice, Boolean inStock, Boolean isActive,
             PaginationAttribute paginationAttribute) {
 
         Pageable pageable = PageRequest.of(
@@ -71,7 +73,8 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
             name, 
             minPrice == null ? null : minPrice.amount(), 
             maxPrice == null ? null : maxPrice.amount(), 
-            inStock
+            inStock,
+            isActive
         );
         
         Specification<ProductJpaEntity> productSpec = ProductSpecification.toSpecification(productSearchCriteria);

@@ -36,6 +36,7 @@ public class UpdateProductUsecase {
         existingProduct.update(
                 command.name(),
                 command.description(),
+                command.isActive(),
                 null,
                 null);
 

@@ -42,6 +42,8 @@ public class ProductFacade {
     private final SetImageAsPrimaryUsecase setImageAsPrimaryUsecase;
     private final UpdateProductUsecase updateProductUsecase;
     private final UpdateVariantUsecase updateVariantUsecase;
+    private final ActivateProductUsecase activateProductUsecase;
+    private final DesactivateProductUsecase desactivateProductUsecase;
 
     private final PresProductMapper productMapper;
     private final FileMapper fileMapper;
@@ -49,11 +51,18 @@ public class ProductFacade {
     public PaginatedEntity<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
-        return getAllProductsUsecase.execute(paginationAttribute).map(productMapper::toResponse);
+        return getAllProductsUsecase.execute(paginationAttribute, true).map(productMapper::toResponse);
+    }
+
+    public PaginatedEntity<ProductResponse> getAllManagedProducts(Boolean isActive, int page, int size, String sortBy,
+            String sortOrder) {
+        PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
+                new SortEntity(sortBy, sortOrder));
+        return getAllProductsUsecase.execute(paginationAttribute, isActive).map(productMapper::toResponse);
     }
 
     public ProductResponse getProduct(Long id) {
-        return productMapper.toResponse(getProductUsecase.execute(id));
+        return productMapper.toResponse(getProductUsecase.execute(id, true));
     }
 
     public ProductResponse createProduct(CreateProductRequest request, List<MultipartFile> images) {
@@ -79,6 +88,14 @@ public class ProductFacade {
         return productMapper.toResponse(updateProductUsecase.execute(command));
     }
 
+    public ProductResponse activateProduct(Long id) {
+        return productMapper.toResponse(activateProductUsecase.execute(id));
+    }
+
+    public ProductResponse desactivateProduct(Long id) {
+        return productMapper.toResponse(desactivateProductUsecase.execute(id));
+    }
+
     public void deleteProduct(Long id) {
         deleteProductUsecase.execute(id);
     }
@@ -88,7 +105,18 @@ public class ProductFacade {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
-                paginationAttribute);
+                true, paginationAttribute);
+
+        return products.map(productMapper::toResponse);
+    }
+
+    public PaginatedEntity<ProductResponse> searchManagedProducts(String keyword, BigDecimal minPrice,
+            BigDecimal maxPrice, Boolean inStock, Boolean isActive, int page, int size, String sortBy,
+            String sortOrder) {
+        PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
+                new SortEntity(sortBy, sortOrder));
+        PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
+                isActive, paginationAttribute);
 
         return products.map(productMapper::toResponse);
     }

@@ -43,6 +43,15 @@ public class ProductSpecification {
         };
     }
 
+    public static Specification<ProductJpaEntity> hasActiveStatus(Boolean isActive) {
+        return (root, query, builder) -> {
+            if (isActive == null) {
+                return null;
+            }
+            return builder.equal(root.get("isActive"), isActive);
+        };
+    }
+
     public static Specification<ProductJpaEntity> hasStock(Boolean inStock) {
         return (root, query, builder) -> {
             if (inStock == null) {
@@ -64,6 +73,7 @@ public class ProductSpecification {
     public static Specification<ProductJpaEntity> toSpecification(ProductSearchCriteria criteria) {
         return Specification.where(hasKeyword(criteria.name()))
                 .and(hasPriceRange(criteria.minPrice(), criteria.maxPrice()))
-                .and(hasStock(criteria.inStock()));
+                .and(hasStock(criteria.inStock()))
+                .and(hasActiveStatus(criteria.isActive()));
     }
 }

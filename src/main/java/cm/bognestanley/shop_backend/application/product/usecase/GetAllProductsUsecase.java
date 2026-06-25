@@ -17,10 +17,10 @@ public class GetAllProductsUsecase {
         this.productRepository = productRepository;
     }
 
-    public PaginatedEntity<Product> execute(PaginationAttribute paginationAttribute) {
+    public PaginatedEntity<Product> execute(PaginationAttribute paginationAttribute, Boolean isActive) {
         if (paginationAttribute == null) {
             throw new ApplicationException(ErrorCode.INVALID_INPUT, "Pagination attributes cannot be null");
         }
-        return productRepository.findAll(paginationAttribute);
+        return productRepository.findAll(paginationAttribute, isActive);
     }
 }

@@ -26,6 +26,10 @@ public class ProductJpaEntity {
     private String name;
     private String description;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

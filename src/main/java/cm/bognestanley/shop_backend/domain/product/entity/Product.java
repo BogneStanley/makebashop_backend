@@ -15,13 +15,14 @@ public class Product {
         private Long id;
         private String name;
         private String description;
+        private boolean isActive = true;
         private List<ProductVariant> productVariants;
         private List<ProductImage> images;
         private List<Category> categories;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
-    public Product(Long id, String name, String description, List<ProductVariant> productVariants, List<ProductImage> images,
+    public Product(Long id, String name, String description, boolean isActive, List<ProductVariant> productVariants, List<ProductImage> images,
             List<Category> categories, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if (name == null || name.isBlank()) {
             throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Name cannot be null or empty");
@@ -50,6 +51,7 @@ public class Product {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.isActive = isActive;
         this.productVariants = productVariants;
         this.images = images;
         this.categories = categories;
@@ -59,7 +61,7 @@ public class Product {
 
 
     public Product(String name, String description) {
-        this(null, name, description, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now());
+        this(null, name, description, true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), LocalDateTime.now(), LocalDateTime.now());
     }
 
     public Long getId() {
@@ -72,6 +74,10 @@ public class Product {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean isActive() {
+        return isActive;
     }
 
     public List<Category> getCategories() {
@@ -94,13 +100,16 @@ public class Product {
         return updatedAt;
     }
 
-    public void update(String newName, String newDescription, List<ProductVariant> newProductVariants,
+    public void update(String newName, String newDescription, Boolean isActive, List<ProductVariant> newProductVariants,
             List<ProductImage> newImages) {
         if(newName != null && !newName.isBlank()) {
             this.name = newName;
         }
         if(newDescription != null) {
             this.description = newDescription;
+        }
+        if(isActive != null) {
+            this.isActive = isActive;
         }
         if(newProductVariants != null) {
             this.productVariants.clear();
@@ -110,6 +119,16 @@ public class Product {
             this.images.clear();
             addImages(newImages);
         }
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void activate() {
+        this.isActive = true;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void desactivate() {
+        this.isActive = false;
         this.updatedAt = LocalDateTime.now();
     }
 

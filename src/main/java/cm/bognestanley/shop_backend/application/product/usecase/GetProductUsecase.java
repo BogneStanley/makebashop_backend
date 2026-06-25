@@ -16,10 +16,20 @@ public class GetProductUsecase {
     }
 
     public Product execute(Long id) {
+        return execute(id, false);
+    }
+
+    public Product execute(Long id, boolean activeOnly) {
         if (id == null) {
             throw new ApplicationException(ErrorCode.INVALID_INPUT, "Product id cannot be null");
         }
-        return productRepository.findById(id)
+        Product product = productRepository.findById(id)
             .orElseThrow(() -> new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product with ID " + id + " not found"));
+
+        if (activeOnly && !product.isActive()) {
+            throw new ApplicationException(ErrorCode.PRODUCT_NOT_FOUND, "Product with ID " + id + " not found");
+        }
+
+        return product;
     }
 }

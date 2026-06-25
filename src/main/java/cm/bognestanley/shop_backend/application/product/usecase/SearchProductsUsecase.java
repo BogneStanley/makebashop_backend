@@ -27,6 +27,7 @@ public class SearchProductsUsecase {
             BigDecimal maxPrice,
             String currencyCode,
             Boolean inStock,
+            Boolean isActive,
             PaginationAttribute paginationAttribute) {
 
         if (paginationAttribute == null) {
@@ -48,6 +49,6 @@ public class SearchProductsUsecase {
             }
         }
 
-        return productRepository.search(name, minPriceVal, maxPriceVal, inStock, paginationAttribute);
+        return productRepository.search(name, minPriceVal, maxPriceVal, inStock, isActive, paginationAttribute);
     }
 }

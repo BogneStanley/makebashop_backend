@@ -5,6 +5,7 @@ import java.util.List;
 public record UpdateProductRequest(
     String name,
     String description,
+    Boolean isActive,
     List<Long> categoryIds
 ) {
 }

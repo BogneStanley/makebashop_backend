@@ -53,6 +53,7 @@ public class PresProductMapper {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+                product.isActive(),
                 product.getCategories().stream().map(categoryMapper::toCategoryResponse).toList(),
                 imageResponses,
                 variantResponses);
@@ -109,7 +110,7 @@ public class PresProductMapper {
     }
 
     public UpdateProductCommand toUpdateProductCommand(Long id, UpdateProductRequest request) {
-        return new UpdateProductCommand(id, request.name(), request.description(), request.categoryIds());
+        return new UpdateProductCommand(id, request.name(), request.description(), request.isActive(), request.categoryIds());
     }
 
     public UpdateImagePositionCommand toUpdateImagePositionCommand(UpdateImagePositionRequest request) {

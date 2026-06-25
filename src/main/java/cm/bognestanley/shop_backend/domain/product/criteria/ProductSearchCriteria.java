@@ -6,7 +6,8 @@ public record ProductSearchCriteria(
     String name,
     BigDecimal minPrice,
     BigDecimal maxPrice,
-    Boolean inStock
+    Boolean inStock,
+    Boolean isActive
 ) {
     
 }

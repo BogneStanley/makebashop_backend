@@ -28,7 +28,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/cart/**").permitAll()
-                        .requestMatchers(HttpMethod.GET ,"/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/managed", "/api/v1/products/managed/search")
+                        .authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST ,"/api/v1/orders/checkout").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
