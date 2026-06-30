@@ -33,3 +33,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Cursor — règles locales (chemins privés, ne pas versionner) ###
+.cursor/rules/documentation-location.mdc

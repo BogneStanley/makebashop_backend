@@ -6,6 +6,7 @@ import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface ProductRepository {
     Optional<Product> findById(Long id);
@@ -13,7 +14,7 @@ public interface ProductRepository {
     PaginatedEntity<Product> findAll(PaginationAttribute paginationAttribute, Boolean isActive);
 
     PaginatedEntity<Product> search(String name, Money minPrice, Money maxPrice, Boolean inStock, Boolean isActive,
-            PaginationAttribute paginationAttribute);
+            List<Long> categoryIds, PaginationAttribute paginationAttribute);
 
     Product save(Product product);
 

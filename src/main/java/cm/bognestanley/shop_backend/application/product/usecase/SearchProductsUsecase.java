@@ -9,6 +9,7 @@ import cm.bognestanley.shop_backend.domain.product.entity.Product;
 import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class SearchProductsUsecase {
             String currencyCode,
             Boolean inStock,
             Boolean isActive,
+            List<Long> categoryIds,
             PaginationAttribute paginationAttribute) {
 
         if (paginationAttribute == null) {
@@ -49,6 +51,6 @@ public class SearchProductsUsecase {
             }
         }
 
-        return productRepository.search(name, minPriceVal, maxPriceVal, inStock, isActive, paginationAttribute);
+        return productRepository.search(name, minPriceVal, maxPriceVal, inStock, isActive, categoryIds, paginationAttribute);
     }
 }

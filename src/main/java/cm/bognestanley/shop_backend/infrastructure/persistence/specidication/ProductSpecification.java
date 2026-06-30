@@ -1,10 +1,12 @@
 package cm.bognestanley.shop_backend.infrastructure.persistence.specidication;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import cm.bognestanley.shop_backend.domain.product.criteria.ProductSearchCriteria;
+import cm.bognestanley.shop_backend.infrastructure.persistence.entity.category.CategoryJpaEntity;
 import cm.bognestanley.shop_backend.infrastructure.persistence.entity.product.ProductJpaEntity;
 import cm.bognestanley.shop_backend.infrastructure.persistence.entity.product.ProductVariantJpaEntity;
 import jakarta.persistence.criteria.Join;
@@ -52,6 +54,19 @@ public class ProductSpecification {
         };
     }
 
+    public static Specification<ProductJpaEntity> hasCategoryIds(List<Long> categoryIds) {
+        return (root, query, builder) -> {
+            if (categoryIds == null || categoryIds.isEmpty()) {
+                return null;
+            }
+
+            query.distinct(true);
+
+            Join<ProductJpaEntity, CategoryJpaEntity> categoryJoin = root.join("categories");
+            return categoryJoin.get("id").in(categoryIds);
+        };
+    }
+
     public static Specification<ProductJpaEntity> hasStock(Boolean inStock) {
         return (root, query, builder) -> {
             if (inStock == null) {
@@ -74,6 +89,7 @@ public class ProductSpecification {
         return Specification.where(hasKeyword(criteria.name()))
                 .and(hasPriceRange(criteria.minPrice(), criteria.maxPrice()))
                 .and(hasStock(criteria.inStock()))
-                .and(hasActiveStatus(criteria.isActive()));
+                .and(hasActiveStatus(criteria.isActive()))
+                .and(hasCategoryIds(criteria.categoryIds()));
     }
 }

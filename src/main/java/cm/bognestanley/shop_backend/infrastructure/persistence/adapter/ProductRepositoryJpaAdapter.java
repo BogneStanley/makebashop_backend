@@ -11,6 +11,7 @@ import cm.bognestanley.shop_backend.infrastructure.persistence.mapper.ProductMap
 import cm.bognestanley.shop_backend.infrastructure.persistence.repository.ProductJpaRepository;
 import cm.bognestanley.shop_backend.infrastructure.persistence.specidication.ProductSpecification;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,7 +63,7 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
 
     @Override
     public PaginatedEntity<Product> search(String name, Money minPrice, Money maxPrice, Boolean inStock, Boolean isActive,
-            PaginationAttribute paginationAttribute) {
+            List<Long> categoryIds, PaginationAttribute paginationAttribute) {
 
         Pageable pageable = PageRequest.of(
                 paginationAttribute.pageNumber(),
@@ -74,7 +75,8 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
             minPrice == null ? null : minPrice.amount(), 
             maxPrice == null ? null : maxPrice.amount(), 
             inStock,
-            isActive
+            isActive,
+            categoryIds
         );
         
         Specification<ProductJpaEntity> productSpec = ProductSpecification.toSpecification(productSearchCriteria);

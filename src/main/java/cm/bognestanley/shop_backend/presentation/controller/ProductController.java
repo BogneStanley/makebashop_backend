@@ -98,9 +98,10 @@ public class ProductController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Boolean inStock) {
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(required = false) List<Long> categoryIds) {
         PaginatedEntity<ProductResponse> paginatedEntity = productFacade.searchProducts(name, minPrice, maxPrice,
-                inStock, page, size, sortBy, sortOrder);
+                inStock, categoryIds, page, size, sortBy, sortOrder);
         return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
     }
 
@@ -121,9 +122,10 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Boolean inStock,
-            @RequestParam(required = false) Boolean isActive) {
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) List<Long> categoryIds) {
         PaginatedEntity<ProductResponse> paginatedEntity = productFacade.searchManagedProducts(name, minPrice, maxPrice,
-                inStock, isActive, page, size, sortBy, sortOrder);
+                inStock, isActive, categoryIds, page, size, sortBy, sortOrder);
         return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
     }
 

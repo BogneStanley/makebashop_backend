@@ -7,12 +7,9 @@ import cm.bognestanley.shop_backend.presentation.dto.request.category.CategoryRe
 import cm.bognestanley.shop_backend.presentation.dto.response.category.CategoryResponse;
 import cm.bognestanley.shop_backend.presentation.mapper.PresCategoryMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -5,7 +5,6 @@ import cm.bognestanley.shop_backend.domain.category.repository.CategoryRepositor
 import cm.bognestanley.shop_backend.infrastructure.persistence.entity.category.CategoryJpaEntity;
 import cm.bognestanley.shop_backend.infrastructure.persistence.mapper.CategoryMapper;
 import cm.bognestanley.shop_backend.infrastructure.persistence.repository.CategoryJpaRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

@@ -101,22 +101,22 @@ public class ProductFacade {
     }
 
     public PaginatedEntity<ProductResponse> searchProducts(String keyword, BigDecimal minPrice, BigDecimal maxPrice,
-            Boolean inStock, int page, int size, String sortBy, String sortOrder) {
+            Boolean inStock, List<Long> categoryIds, int page, int size, String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
-                true, paginationAttribute);
+                true, categoryIds, paginationAttribute);
 
         return products.map(productMapper::toResponse);
     }
 
     public PaginatedEntity<ProductResponse> searchManagedProducts(String keyword, BigDecimal minPrice,
-            BigDecimal maxPrice, Boolean inStock, Boolean isActive, int page, int size, String sortBy,
-            String sortOrder) {
+            BigDecimal maxPrice, Boolean inStock, Boolean isActive, List<Long> categoryIds, int page, int size,
+            String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
-                isActive, paginationAttribute);
+                isActive, categoryIds, paginationAttribute);
 
         return products.map(productMapper::toResponse);
     }

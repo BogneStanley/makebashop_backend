@@ -1,6 +1,5 @@
 package cm.bognestanley.shop_backend.application.category.usecase;
 
-import cm.bognestanley.shop_backend.application.category.dto.CategoryCommand;
 import cm.bognestanley.shop_backend.application.common.exception.ApplicationException;
 import cm.bognestanley.shop_backend.domain.category.entity.Category;
 import cm.bognestanley.shop_backend.domain.category.repository.CategoryRepository;
