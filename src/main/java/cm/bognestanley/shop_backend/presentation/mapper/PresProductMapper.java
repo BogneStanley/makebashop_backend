@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import cm.bognestanley.shop_backend.application.common.dto.FileContent;
+import cm.bognestanley.shop_backend.infrastructure.config.UploadProperties;
 import cm.bognestanley.shop_backend.application.product.dto.CreateProductCommand;
 import cm.bognestanley.shop_backend.application.product.dto.CreateProductVariantCommand;
 import cm.bognestanley.shop_backend.application.product.dto.UpdateImagePositionCommand;
@@ -29,9 +30,11 @@ public class PresProductMapper {
     private String currency;
 
     private final PresCategoryMapper categoryMapper;
+    private final UploadProperties uploadProperties;
 
-    public PresProductMapper(PresCategoryMapper categoryMapper) {
+    public PresProductMapper(PresCategoryMapper categoryMapper, UploadProperties uploadProperties) {
         this.categoryMapper = categoryMapper;
+        this.uploadProperties = uploadProperties;
     }
 
     public ProductResponse toResponse(Product product) {
@@ -78,7 +81,7 @@ public class PresProductMapper {
         }
         return new ProductImageResponse(
                 image.getId(),
-                image.getUrl(),
+                uploadProperties.resolvePublicUrl(image.getUrl()),
                 image.getFileName(),
                 image.getPosition(),
                 image.isPrimary());

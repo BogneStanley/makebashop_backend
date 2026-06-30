@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/managed", "/api/v1/products/managed/search")
                         .authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.POST ,"/api/v1/orders/checkout").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",

@@ -1,8 +1,18 @@
 {"properties": [
   {
-    "name": "app.upload-dir",
+    "name": "app.upload.dir",
     "type": "java.lang.String",
-    "description": "Path where files are uploaded"
+    "description": "Filesystem directory where uploaded files are stored"
+  },
+  {
+    "name": "app.upload.url-prefix",
+    "type": "java.lang.String",
+    "description": "Public URL prefix to access uploaded files (e.g. /uploads)"
+  },
+  {
+    "name": "app.upload.public-base-url",
+    "type": "java.lang.String",
+    "description": "Public base URL of the API used to build absolute file URLs (e.g. http://localhost:8080)"
   },
   {
     "name": "app.currency-code",

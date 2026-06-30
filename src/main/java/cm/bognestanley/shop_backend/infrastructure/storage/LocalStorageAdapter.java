@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cm.bognestanley.shop_backend.application.common.dto.FileContent;
 import cm.bognestanley.shop_backend.application.common.dto.StoredFile;
 import cm.bognestanley.shop_backend.application.common.port.FileStoragePort;
+import cm.bognestanley.shop_backend.infrastructure.config.UploadProperties;
 import cm.bognestanley.shop_backend.infrastructure.exception.StorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LocalStorageAdapter implements FileStoragePort{
 
-    @Value("${app.upload-dir}")
-    private String UPLOAD_DIR;
+    private final UploadProperties uploadProperties;
 
     @Override
     public StoredFile uploadFile(FileContent fileContent) {
@@ -37,7 +36,7 @@ public class LocalStorageAdapter implements FileStoragePort{
 
         String nameToSaveFile = getFilenameWithoutExtension(fileContent.filename()) + "-" + UUID.randomUUID() + "." + extension.get();
 
-        Path targetPath = Paths.get(UPLOAD_DIR, nameToSaveFile);
+        Path targetPath = Paths.get(uploadProperties.getDir(), nameToSaveFile);
 
         try {
             Files.createDirectories(targetPath.getParent());
@@ -47,13 +46,17 @@ public class LocalStorageAdapter implements FileStoragePort{
             throw new StorageException("Failed to upload file: " + e.getMessage(), e);
         }
 
-        return new StoredFile(nameToSaveFile, fileContent.filename(), fileContent.contentType(), nameToSaveFile);
+        return new StoredFile(
+                nameToSaveFile,
+                fileContent.filename(),
+                fileContent.contentType(),
+                uploadProperties.relativePath(nameToSaveFile));
     }
 
     @Override
     public void deleteFile(String storageKey) {
         try {
-            Path targetPath = Paths.get(UPLOAD_DIR, storageKey);
+            Path targetPath = Paths.get(uploadProperties.getDir(), storageKey);
             Files.delete(targetPath);
         } catch (IOException e) {
             log.error("Failed to delete file: {}", e.getMessage());
@@ -63,7 +66,7 @@ public class LocalStorageAdapter implements FileStoragePort{
 
 
     public String getUploadDir() {
-        return UPLOAD_DIR;
+        return uploadProperties.getDir();
     }
 
     private Optional<String> getFileExtension(String filename){
