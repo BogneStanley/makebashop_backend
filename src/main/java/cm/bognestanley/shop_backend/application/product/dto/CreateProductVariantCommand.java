@@ -10,11 +10,11 @@ public record CreateProductVariantCommand(
     BigDecimal price,
     String currencyCode,
     int stockQuantity,
-    String color,
-    String size
+    String size,
+    String color
 ) {
 
     public ProductVariant toDomainEntity() {
-        return ProductVariant.create(this.sku(), new Money(this.price(), this.currencyCode()), this.stockQuantity(), this.color(), this.size());
+        return ProductVariant.create(this.sku(), new Money(this.price(), this.currencyCode()), this.stockQuantity(), this.size(), this.color());
     }
 }

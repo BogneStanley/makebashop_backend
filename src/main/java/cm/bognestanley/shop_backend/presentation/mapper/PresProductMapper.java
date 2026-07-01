@@ -71,8 +71,8 @@ public class PresProductMapper {
                 variant.getSku(),
                 new MoneyResponse(variant.getPrice().amount(), variant.getPrice().currency()),
                 variant.getStockQuantity(),
-                variant.getSize(),
-                variant.getColor());
+                variant.getColor(),
+                variant.getSize());
     }
 
     public ProductImageResponse toImageResponse(ProductImage image) {
