@@ -5,11 +5,13 @@ import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository {
     Optional<Product> findById(Long id);
+
+    List<Product> findAllByIds(List<Long> ids);
 
     PaginatedEntity<Product> findAll(PaginationAttribute paginationAttribute, Boolean isActive);
 
@@ -19,4 +21,8 @@ public interface ProductRepository {
     Product save(Product product);
 
     void delete(Product product);
+
+    List<Product> findNewest(int limit, boolean activeOnly);
+
+    List<Product> findMostPopular(int limit, boolean activeOnly);
 }

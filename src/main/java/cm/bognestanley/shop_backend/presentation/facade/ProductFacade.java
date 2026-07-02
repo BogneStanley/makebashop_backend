@@ -21,6 +21,7 @@ import cm.bognestanley.shop_backend.presentation.dto.request.product.CreateProdu
 import cm.bognestanley.shop_backend.presentation.dto.request.product.ProductVariantRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.product.UpdateImagePositionRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.product.UpdateProductRequest;
+import cm.bognestanley.shop_backend.presentation.dto.response.product.ProductHighlightsResponse;
 import cm.bognestanley.shop_backend.presentation.dto.response.product.ProductResponse;
 import cm.bognestanley.shop_backend.presentation.mapper.FileMapper;
 import cm.bognestanley.shop_backend.presentation.mapper.PresProductMapper;
@@ -37,6 +38,7 @@ public class ProductFacade {
     private final CreateProductUsecase createProductUsecase;
     private final DeleteProductUsecase deleteProductUsecase;
     private final GetAllProductsUsecase getAllProductsUsecase;
+    private final GetProductHighlightsUsecase getProductHighlightsUsecase;
     private final GetProductUsecase getProductUsecase;
     private final SearchProductsUsecase searchProductsUsecase;
     private final SetImageAsPrimaryUsecase setImageAsPrimaryUsecase;
@@ -52,6 +54,14 @@ public class ProductFacade {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         return getAllProductsUsecase.execute(paginationAttribute, true).map(productMapper::toResponse);
+    }
+
+    public ProductHighlightsResponse getProductHighlights() {
+        var highlights = getProductHighlightsUsecase.execute();
+        return new ProductHighlightsResponse(
+                highlights.newProducts().stream().map(productMapper::toResponse).toList(),
+                highlights.popularProducts().stream().map(productMapper::toResponse).toList(),
+                highlights.featuredProducts().stream().map(productMapper::toResponse).toList());
     }
 
     public PaginatedEntity<ProductResponse> getAllManagedProducts(Boolean isActive, int page, int size, String sortBy,

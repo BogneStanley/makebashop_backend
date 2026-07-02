@@ -29,6 +29,7 @@ import cm.bognestanley.shop_backend.presentation.dto.request.product.UpdateImage
 import cm.bognestanley.shop_backend.presentation.dto.request.product.UpdateProductRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper;
 import cm.bognestanley.shop_backend.presentation.dto.response.common.ResponseDataWrapper;
+import cm.bognestanley.shop_backend.presentation.dto.response.product.ProductHighlightsResponse;
 import cm.bognestanley.shop_backend.presentation.dto.response.product.ProductResponse;
 import cm.bognestanley.shop_backend.presentation.facade.ProductFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -127,6 +128,17 @@ public class ProductController {
         PaginatedEntity<ProductResponse> paginatedEntity = productFacade.searchManagedProducts(name, minPrice, maxPrice,
                 inStock, isActive, categoryIds, page, size, sortBy, sortOrder);
         return ResponseEntity.ok(ResponseDataWrapper.ok(paginatedEntity));
+    }
+
+    @GetMapping("/highlights")
+    @Operation(summary = "Get product highlights: newest, popular and featured (public)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product highlights found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<ProductHighlightsResponse>> getProductHighlights() {
+        ProductHighlightsResponse highlights = productFacade.getProductHighlights();
+        return ResponseEntity.ok(ResponseDataWrapper.ok(highlights));
     }
 
     @GetMapping("/{id}")
