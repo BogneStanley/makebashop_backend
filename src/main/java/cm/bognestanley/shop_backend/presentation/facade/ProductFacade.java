@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +50,9 @@ public class ProductFacade {
 
     private final PresProductMapper productMapper;
     private final FileMapper fileMapper;
+
+    @Value("${app.currency-code:FCFA}")
+    private String currencyCode;
 
     public PaginatedEntity<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
@@ -114,7 +118,7 @@ public class ProductFacade {
             Boolean inStock, List<Long> categoryIds, int page, int size, String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
-        PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
+        PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, currencyCode, inStock,
                 true, categoryIds, paginationAttribute);
 
         return products.map(productMapper::toResponse);
@@ -125,7 +129,7 @@ public class ProductFacade {
             String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
-        PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, null, inStock,
+        PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, currencyCode, inStock,
                 isActive, categoryIds, paginationAttribute);
 
         return products.map(productMapper::toResponse);
