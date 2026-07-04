@@ -18,7 +18,8 @@ public class HeaderCartContextProvider {
 
         String cartIdHeader = request.getHeader("X-Cart-Id");
 
-        if (cartIdHeader.isEmpty()) return Optional.empty();
+
+        if (cartIdHeader == null || cartIdHeader.isEmpty()) return Optional.empty();
 
         return Optional.of(cartIdHeader)
                 .map(Long::valueOf);
