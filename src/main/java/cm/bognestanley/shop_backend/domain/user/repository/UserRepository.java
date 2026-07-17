@@ -5,6 +5,7 @@ import java.util.Optional;
 import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.user.entity.User;
+import cm.bognestanley.shop_backend.domain.user.entity.UserRole;
 
 public interface UserRepository {
     Optional<User> findByEmail(String email);
@@ -14,4 +15,6 @@ public interface UserRepository {
     User save(User user);
     Optional<User> findById(Long id);
     boolean existsByEmail(String email);
+
+    boolean existsByRole(UserRole role);
 }

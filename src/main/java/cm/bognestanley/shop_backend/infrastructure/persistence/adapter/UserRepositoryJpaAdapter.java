@@ -13,6 +13,7 @@ import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.user.criteria.SearchUserCriteria;
 import cm.bognestanley.shop_backend.domain.user.entity.User;
+import cm.bognestanley.shop_backend.domain.user.entity.UserRole;
 import cm.bognestanley.shop_backend.domain.user.repository.UserRepository;
 import cm.bognestanley.shop_backend.infrastructure.persistence.entity.user.UserJpaEntity;
 import cm.bognestanley.shop_backend.infrastructure.persistence.mapper.UserMapper;
@@ -78,5 +79,10 @@ public class UserRepositoryJpaAdapter implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         return userJpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsByRole(UserRole role) {
+        return userJpaRepository.existsByRole(role);
     }
 }
