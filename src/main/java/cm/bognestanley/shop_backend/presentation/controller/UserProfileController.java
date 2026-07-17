@@ -1,6 +1,7 @@
 package cm.bognestanley.shop_backend.presentation.controller;
 
-import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateUserRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdatePasswordRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateProfileRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.common.ResponseDataWrapper;
 import cm.bognestanley.shop_backend.presentation.dto.response.user.UserResponse;
 import cm.bognestanley.shop_backend.presentation.facade.UserFacade;
@@ -48,8 +49,21 @@ public class UserProfileController {
             @ApiResponse(responseCode = "409", description = "Email already exists", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<UserResponse>> updateProfile(
-            @Valid @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateProfileRequest request) {
         UserResponse userResponse = userFacade.updateProfile(request);
         return ResponseEntity.ok(ResponseDataWrapper.ok(userResponse, "PROFILE_UPDATED", "Profile updated successfully"));
+    }
+
+    @PutMapping("/me/password")
+    @Operation(summary = "Update current user password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or incorrect current password", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
+    })
+    public ResponseEntity<ResponseDataWrapper<Void>> updatePassword(
+            @Valid @RequestBody UpdatePasswordRequest request) {
+        userFacade.updatePassword(request);
+        return ResponseEntity.ok(ResponseDataWrapper.ok(null, "PASSWORD_UPDATED", "Password updated successfully"));
     }
 }

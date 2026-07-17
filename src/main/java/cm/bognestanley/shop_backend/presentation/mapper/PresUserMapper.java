@@ -3,9 +3,12 @@ package cm.bognestanley.shop_backend.presentation.mapper;
 import org.springframework.stereotype.Component;
 
 import cm.bognestanley.shop_backend.application.user.dto.RegisterUserCommand;
+import cm.bognestanley.shop_backend.application.user.dto.UpdatePasswordCommand;
 import cm.bognestanley.shop_backend.application.user.dto.UpdateUserCommand;
 import cm.bognestanley.shop_backend.domain.user.entity.User;
 import cm.bognestanley.shop_backend.presentation.dto.request.user.CreateUserRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdatePasswordRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateProfileRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateUserRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.user.UserResponse;
 
@@ -56,5 +59,31 @@ public class PresUserMapper {
                 request.lastName(),
                 request.avatar(),
                 request.role());
+    }
+
+    public UpdateUserCommand toUpdateProfileCommand(Long userId, UpdateProfileRequest request) {
+        if (request == null) {
+            return new UpdateUserCommand(userId, null, null, null, null, null, null);
+        }
+
+        return new UpdateUserCommand(
+                userId,
+                request.email(),
+                null,
+                request.firstName(),
+                request.lastName(),
+                request.avatar(),
+                null);
+    }
+
+    public UpdatePasswordCommand toUpdatePasswordCommand(Long userId, UpdatePasswordRequest request) {
+        if (request == null) {
+            return new UpdatePasswordCommand(userId, null, null);
+        }
+
+        return new UpdatePasswordCommand(
+                userId,
+                request.currentPassword(),
+                request.newPassword());
     }
 }

@@ -7,12 +7,15 @@ import cm.bognestanley.shop_backend.application.user.usecase.DeleteUserUsecase;
 import cm.bognestanley.shop_backend.application.user.usecase.DesactivateUserUsecase;
 import cm.bognestanley.shop_backend.application.user.usecase.GetAllUsersUsecase;
 import cm.bognestanley.shop_backend.application.user.usecase.GetOneUserUsecase;
+import cm.bognestanley.shop_backend.application.user.usecase.UpdatePasswordUsecase;
 import cm.bognestanley.shop_backend.application.user.usecase.UpdateUserUsecase;
 import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.user.entity.User;
 import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 import cm.bognestanley.shop_backend.presentation.dto.request.user.CreateUserRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdatePasswordRequest;
+import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateProfileRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.user.UpdateUserRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.user.UserResponse;
 import cm.bognestanley.shop_backend.presentation.mapper.PresUserMapper;
@@ -29,6 +32,7 @@ public class UserFacade {
     private final GetAllUsersUsecase getAllUsersUsecase;
     private final GetOneUserUsecase getOneUserUsecase;
     private final UpdateUserUsecase updateUserUsecase;
+    private final UpdatePasswordUsecase updatePasswordUsecase;
     private final DeleteUserUsecase deleteUserUsecase;
     private final ActivateUserUsecase activateUserUsecase;
     private final DesactivateUserUsecase desactivateUserUsecase;
@@ -57,18 +61,15 @@ public class UserFacade {
         return userMapper.toResponse(user);
     }
 
-    public UserResponse updateProfile(UpdateUserRequest request) {
+    public UserResponse updateProfile(UpdateProfileRequest request) {
         Long currentUserId = getCurrentUserId();
-        UpdateUserRequest profileRequest = new UpdateUserRequest(
-                request.email(),
-                request.password(),
-                request.firstName(),
-                request.lastName(),
-                request.avatar(),
-                null);
-
-        User user = updateUserUsecase.execute(userMapper.toUpdateUserCommand(currentUserId, profileRequest));
+        User user = updateUserUsecase.execute(userMapper.toUpdateProfileCommand(currentUserId, request));
         return userMapper.toResponse(user);
+    }
+
+    public void updatePassword(UpdatePasswordRequest request) {
+        Long currentUserId = getCurrentUserId();
+        updatePasswordUsecase.execute(userMapper.toUpdatePasswordCommand(currentUserId, request));
     }
 
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
