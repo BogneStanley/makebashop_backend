@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/contact")
+@RequestMapping("/contact")
 @RequiredArgsConstructor
 @Tag(name = "Contact", description = "Informations de contact de la boutique (lecture publique)")
 public class ContactSettingsController {

@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/admin/contact-settings")
+@RequestMapping("/admin/contact-settings")
 @RequiredArgsConstructor
 @Tag(name = "Contact Settings (Admin)", description = "Configurer les contacts de la boutique")
 @SecurityRequirement(name = "bearerAuth")

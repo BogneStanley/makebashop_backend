@@ -1,5 +1,6 @@
 package cm.bognestanley.shop_backend.infrastructure.security;
 
+import cm.bognestanley.shop_backend.infrastructure.config.ApiProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,29 +21,34 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
+    private final ApiProperties apiProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        String api = apiProperties.getBasePath();
         http
                 .cors(Customizer.withDefaults())
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/cart/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/managed", "/api/v1/products/managed/search")
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/auth/**").permitAll()
+                        .requestMatchers(api + "/cart/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, api + "/products/managed", api + "/products/managed/search")
                         .authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/contact").permitAll()
+                        .requestMatchers(HttpMethod.GET, api + "/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, api + "/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, api + "/contact").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.POST ,"/api/v1/orders/checkout").permitAll()
+                        .requestMatchers(HttpMethod.POST, api + "/orders/checkout").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(customAccessDeniedHandler)

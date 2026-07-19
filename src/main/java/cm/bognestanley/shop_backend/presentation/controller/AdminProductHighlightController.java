@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/admin/product-highlights")
+@RequestMapping("/admin/product-highlights")
 @RequiredArgsConstructor
 @Tag(name = "Product Highlights (Admin)", description = "Configure homepage product highlight lists")
 @SecurityRequirement(name = "bearerAuth")

@@ -16,6 +16,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
 
     depends_on:
       postgres:
@@ -58,6 +61,15 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+  
+  redis:
+    image: redis:7
+    container_name: shop_backend_redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    networks:
+      - backend
 
 
 
