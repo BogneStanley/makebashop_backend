@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +56,7 @@ public class ProductFacade {
     @Value("${app.currency-code:FCFA}")
     private String currencyCode;
 
+    @Cacheable(value = "products", key = "#page + '-' + #size + '-' + #sortBy + '-' + #sortOrder")
     public PaginatedEntity<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
@@ -68,6 +71,7 @@ public class ProductFacade {
                 highlights.featuredProducts().stream().map(productMapper::toResponse).toList());
     }
 
+    @Cacheable(value = "products", key = "#isActive + '-' + #page + '-' + #size + '-' + #sortBy + '-' + #sortOrder")
     public PaginatedEntity<ProductResponse> getAllManagedProducts(Boolean isActive, int page, int size, String sortBy,
             String sortOrder) {
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
@@ -75,10 +79,12 @@ public class ProductFacade {
         return getAllProductsUsecase.execute(paginationAttribute, isActive).map(productMapper::toResponse);
     }
 
+    @Cacheable(value = "products", key = "#id")
     public ProductResponse getProduct(Long id) {
         return productMapper.toResponse(getProductUsecase.execute(id, true));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse createProduct(CreateProductRequest request, List<MultipartFile> images) {
 
         if (images == null) {
@@ -97,19 +103,23 @@ public class ProductFacade {
         return productMapper.toResponse(createProductUsecase.execute(command));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
         UpdateProductCommand command = productMapper.toUpdateProductCommand(id, request);
         return productMapper.toResponse(updateProductUsecase.execute(command));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse activateProduct(Long id) {
         return productMapper.toResponse(activateProductUsecase.execute(id));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse desactivateProduct(Long id) {
         return productMapper.toResponse(desactivateProductUsecase.execute(id));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(Long id) {
         deleteProductUsecase.execute(id);
     }
@@ -135,6 +145,7 @@ public class ProductFacade {
         return products.map(productMapper::toResponse);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse addImagesToProduct(Long productId, List<MultipartFile> files) {
         return productMapper.toResponse(bulkAddImageUsecase.execute(productId, files.stream().map(file -> {
             try {
@@ -145,32 +156,38 @@ public class ProductFacade {
         }).toList()));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse addVariantsToProduct(Long productId, List<ProductVariantRequest> variants) {
         List<CreateProductVariantCommand> commandVariants = variants.stream()
                 .map(productMapper::toCreateProductVariantCommand).toList();
         return productMapper.toResponse(bulkAddVariantUsecase.execute(productId, commandVariants));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse deleteImagesFromProduct(Long productId, List<Long> imageIds) {
         return productMapper.toResponse(bulkDeleteImageUsecase.execute(productId, imageIds));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse deleteVariantsFromProduct(Long productId, List<Long> variantIds) {
         return productMapper.toResponse(bulkDeleteVarianteUsecase.execute(productId, variantIds));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateImagesPosition(Long productId, List<UpdateImagePositionRequest> imagesPosition) {
         List<UpdateImagePositionCommand> commands = imagesPosition.stream()
                 .map(productMapper::toUpdateImagePositionCommand).toList();
         return productMapper.toResponse(bulkUpdateImagePosition.execute(productId, commands));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateVariant(Long productId, Long variantId, ProductVariantRequest request) {
         return productMapper.toResponse(
                 updateVariantUsecase.execute(productId,
                         productMapper.toUpdateProductVariantCommand(variantId, request)));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public ProductResponse setProductImageAsPrimary(Long productId, Long imageId) {
         return productMapper.toResponse(setImageAsPrimaryUsecase.execute(productId, imageId));
     }
