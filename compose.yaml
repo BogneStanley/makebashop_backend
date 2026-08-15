@@ -23,10 +23,23 @@ services:
       postgres:
         condition: service_healthy
 
-
     restart: unless-stopped
     networks:
       - shop_backend_network
+      - proxy
+
+    volumes:
+      - uploads_data:/app/uploads
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shopbackend.rule=Host(`${API_HOST:-api.shop.local}`)"
+      - "traefik.http.routers.shopbackend.entrypoints=websecure"
+      - "traefik.http.routers.shopbackend.tls=true"
+      - "traefik.http.routers.shopbackend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.shopbackend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.shopbackend.middlewares=secureHeaders@file,compression@file"
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -96,6 +109,7 @@ services:
     volumes:
       - ./docker/postgres:/scripts
       - ./backups:/backups
+      - uploads_data:/app/uploads
 
     working_dir: /scripts
 
@@ -108,5 +122,9 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
+
 networks:
   shop_backend_network:
+  proxy:
+    external: true
