@@ -40,8 +40,9 @@ COPY --from=builder /app/target/*.jar app.jar
 
 
 
-RUN useradd -m spring
-
+RUN useradd -m spring && \
+    mkdir -p /app/uploads && \
+    chown -R spring:spring /app
 
 USER spring
 

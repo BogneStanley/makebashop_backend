@@ -36,13 +36,14 @@ public class LocalStorageAdapter implements FileStoragePort{
 
         String nameToSaveFile = getFilenameWithoutExtension(fileContent.filename()) + "-" + UUID.randomUUID() + "." + extension.get();
 
-        Path targetPath = Paths.get(uploadProperties.getDir(), nameToSaveFile);
+        Path uploadDir = Paths.get(uploadProperties.getDir()).toAbsolutePath().normalize();
+        Path targetPath = uploadDir.resolve(nameToSaveFile);
 
         try {
-            Files.createDirectories(targetPath.getParent());
+            Files.createDirectories(uploadDir);
             Files.write(targetPath, fileContent.content());
         } catch (IOException e) {
-            log.error("Failed to upload file: {}", e.getMessage());
+            log.error("Failed to upload file to {}: {} ({})", targetPath, e.getMessage(), e.getClass().getSimpleName());
             throw new StorageException("Failed to upload file: " + e.getMessage(), e);
         }
 
