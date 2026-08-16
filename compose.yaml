@@ -19,6 +19,7 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
 
     depends_on:
       postgres:
