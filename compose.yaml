@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    container_name: shop_backend_app
+    container_name: shop-backend-app
 
     ports:
       - "8081:8080"
