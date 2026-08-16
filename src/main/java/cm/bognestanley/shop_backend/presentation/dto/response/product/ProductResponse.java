@@ -2,6 +2,7 @@ package cm.bognestanley.shop_backend.presentation.dto.response.product;
 
 import cm.bognestanley.shop_backend.presentation.dto.response.category.CategoryResponse;
 
+import java.io.Serializable;
 import java.util.List;
 
 public record ProductResponse(
@@ -12,7 +13,7 @@ public record ProductResponse(
         List<CategoryResponse> categories,
         List<ProductImageResponse> images,
         List<ProductVariantResponse> productVariants
-) {
+) implements Serializable {
 
     public ProductResponse copyWith(List<ProductVariantResponse> variants) {
         return new ProductResponse(

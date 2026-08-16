@@ -1,5 +1,6 @@
 package cm.bognestanley.shop_backend.domain.pagination;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.function.Function;
 
@@ -12,7 +13,7 @@ public record PaginatedEntity<E>(
         boolean first,
         boolean last,
         boolean empty,
-        SortEntity sort) {
+        SortEntity sort) implements Serializable {
 
             public <T> PaginatedEntity<T> map(Function<E, T> mapper) {
                 return new PaginatedEntity<>(
