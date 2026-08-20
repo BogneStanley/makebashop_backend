@@ -85,8 +85,16 @@ public class ProductSpecification {
         };
     }
 
+    public static Specification<ProductJpaEntity> distinct() {
+        return (root, query, builder) -> {
+            query.distinct(true);
+            return null;
+        };
+    }
+
     public static Specification<ProductJpaEntity> toSpecification(ProductSearchCriteria criteria) {
-        return Specification.where(hasKeyword(criteria.name()))
+        return Specification.where(distinct())
+                .and(hasKeyword(criteria.name()))
                 .and(hasPriceRange(criteria.minPrice(), criteria.maxPrice()))
                 .and(hasStock(criteria.inStock()))
                 .and(hasActiveStatus(criteria.isActive()))

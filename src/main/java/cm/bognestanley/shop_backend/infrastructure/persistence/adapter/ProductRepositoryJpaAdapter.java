@@ -72,13 +72,10 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
 
     @Override
     public PaginatedEntity<Product> findAll(PaginationAttribute paginationAttribute, Boolean isActive) {
-        Pageable pageable = PageRequest.of(
-                paginationAttribute.pageNumber(),
-                paginationAttribute.pageSize(),
-                Sort.by(Direction.fromString(paginationAttribute.sort().direction()), paginationAttribute.sort().property()));
-        Page<ProductJpaEntity> page = isActive == null
-                ? productJpaRepository.findAll(pageable)
-                : productJpaRepository.findAll(ProductSpecification.hasActiveStatus(isActive), pageable);
+        Pageable pageable = createPageable(paginationAttribute);
+        Specification<ProductJpaEntity> spec = ProductSpecification.distinct()
+                .and(ProductSpecification.hasActiveStatus(isActive));
+        Page<ProductJpaEntity> page = productJpaRepository.findAll(spec, pageable);
         return productMapper.toPaginatedDomain(page);
     }
 
@@ -86,10 +83,7 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
     public PaginatedEntity<Product> search(String name, Money minPrice, Money maxPrice, Boolean inStock, Boolean isActive,
             List<Long> categoryIds, PaginationAttribute paginationAttribute) {
 
-        Pageable pageable = PageRequest.of(
-                paginationAttribute.pageNumber(),
-                paginationAttribute.pageSize(),
-                Sort.by(Direction.fromString(paginationAttribute.sort().direction()), paginationAttribute.sort().property()));
+        Pageable pageable = createPageable(paginationAttribute);
 
         ProductSearchCriteria productSearchCriteria = new ProductSearchCriteria(
             name, 
@@ -104,6 +98,17 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
         Page<ProductJpaEntity> page = productJpaRepository.findAll(productSpec, pageable);
 
         return productMapper.toPaginatedDomain(page);
+    }
+
+    private Pageable createPageable(PaginationAttribute paginationAttribute) {
+        String sortProperty = paginationAttribute.sort().property();
+        if ("price".equalsIgnoreCase(sortProperty)) {
+            sortProperty = "variants.price";
+        }
+        return PageRequest.of(
+                paginationAttribute.pageNumber(),
+                paginationAttribute.pageSize(),
+                Sort.by(Direction.fromString(paginationAttribute.sort().direction()), sortProperty));
     }
 
     @Override
