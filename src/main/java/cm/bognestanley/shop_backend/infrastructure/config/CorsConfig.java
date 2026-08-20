@@ -1,5 +1,7 @@
 package cm.bognestanley.shop_backend.infrastructure.config;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,25 +26,39 @@ public class CorsConfig implements WebMvcConfigurer {
         this.corsProperties = corsProperties;
     }
 
+    private List<String> getSanitizedOrigins() {
+        if (corsProperties.getAllowedOrigins() == null) {
+            return List.of();
+        }
+        return corsProperties.getAllowedOrigins().stream()
+                .filter(origin -> origin != null && !origin.isBlank())
+                .map(String::trim)
+                .map(origin -> origin.replaceAll("/+$", ""))
+                .toList();
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        List<String> origins = getSanitizedOrigins();
+        configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(corsProperties.getAllowedMethods());
-        configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(corsProperties.getAllowedOrigins().toArray(String[]::new))
+        List<String> origins = getSanitizedOrigins();
+        registry.addMapping("/**")
+                .allowedOrigins(origins.toArray(String[]::new))
                 .allowedMethods(corsProperties.getAllowedMethods().toArray(String[]::new))
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }
+
