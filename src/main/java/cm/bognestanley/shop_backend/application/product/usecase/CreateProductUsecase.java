@@ -36,7 +36,9 @@ public class CreateProductUsecase {
 
         Product product = new Product(
             command.name(),
-            command.description()
+            command.description(),
+            command.details(),
+            command.shippingInfo()
         );
 
         if (command.images() != null) {

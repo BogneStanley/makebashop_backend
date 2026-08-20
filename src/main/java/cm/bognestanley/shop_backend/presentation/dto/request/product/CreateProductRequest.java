@@ -11,6 +11,10 @@ public record CreateProductRequest(
 
         @NotBlank(message = "Product description is required") String description,
 
+        String details,
+
+        String shippingInfo,
+
         List<Long> categoryIds,
 
         @NotEmpty(message = "Product variants are required") @Valid List<ProductVariantRequest> productVariants) {

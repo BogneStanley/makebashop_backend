@@ -6,6 +6,8 @@ public record UpdateProductCommand(
     Long id,
     String name,
     String description,
+    String details,
+    String shippingInfo,
     Boolean isActive,
     List<Long> categoryIds
 ) {}

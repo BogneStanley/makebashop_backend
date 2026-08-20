@@ -26,6 +26,12 @@ public class ProductJpaEntity {
     private String name;
     private String description;
 
+    @Column(columnDefinition = "TEXT")
+    private String details;
+
+    @Column(name = "shipping_info", columnDefinition = "TEXT")
+    private String shippingInfo;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;

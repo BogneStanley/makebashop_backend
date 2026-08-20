@@ -30,6 +30,8 @@ public class ProductMapper {
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
+                .details(product.getDetails())
+                .shippingInfo(product.getShippingInfo())
                 .isActive(product.isActive())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
@@ -60,6 +62,8 @@ public class ProductMapper {
                 save.getId(),
                 save.getName(),
                 save.getDescription(),
+                save.getDetails(),
+                save.getShippingInfo(),
                 save.isActive(),
                 save.getVariants().stream().map(this::toProductVariantDomain).collect(Collectors.toList()),
                 save.getImages().stream().map(this::toProductImageDomain).collect(Collectors.toList()),
