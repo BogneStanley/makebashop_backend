@@ -41,6 +41,7 @@ build/
 ### Backups ###
 backups/
 *.sql
+!**/src/main/resources/db/migration/*.sql
 *.sql.gz
 *.dump
 

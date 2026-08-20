@@ -1,0 +1,2 @@
+ALTER TABLE products ADD COLUMN IF NOT EXISTS details TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS shipping_info TEXT;
