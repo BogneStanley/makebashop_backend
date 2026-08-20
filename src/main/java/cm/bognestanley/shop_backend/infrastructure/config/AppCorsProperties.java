@@ -12,6 +12,6 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "app.cors")
 public class AppCorsProperties {
 
-    private List<String> allowedOrigins = List.of("http://localhost:4200", "http://localhost:5173", "http://localhost:4000");
+    private List<String> allowedOrigins = List.of("http://localhost:4200", "http://localhost:5173");
     private List<String> allowedMethods = List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
 }
