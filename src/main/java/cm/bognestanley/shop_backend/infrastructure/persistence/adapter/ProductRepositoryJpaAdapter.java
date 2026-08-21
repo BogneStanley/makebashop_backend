@@ -84,7 +84,7 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
 
         Specification<ProductJpaEntity> spec = ProductSpecification.toSpecification(criteria, sortBy, sortOrder);
         Page<ProductJpaEntity> page = productJpaRepository.findAll(spec, pageable);
-        return productMapper.toPaginatedDomain(page);
+        return productMapper.toPaginatedDomain(page, paginationAttribute.sort());
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ProductRepositoryJpaAdapter implements ProductRepository {
         Specification<ProductJpaEntity> productSpec = ProductSpecification.toSpecification(productSearchCriteria, sortBy, sortOrder);
         Page<ProductJpaEntity> page = productJpaRepository.findAll(productSpec, pageable);
 
-        return productMapper.toPaginatedDomain(page);
+        return productMapper.toPaginatedDomain(page, paginationAttribute.sort());
     }
 
     private Pageable createPageable(PaginationAttribute paginationAttribute, boolean isSortByPrice) {

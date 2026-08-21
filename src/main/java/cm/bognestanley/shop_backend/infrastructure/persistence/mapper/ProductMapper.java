@@ -73,6 +73,20 @@ public class ProductMapper {
     }
 
     public PaginatedEntity<Product> toPaginatedDomain(Page<ProductJpaEntity> page) {
+        return toPaginatedDomain(page, null);
+    }
+
+    public PaginatedEntity<Product> toPaginatedDomain(Page<ProductJpaEntity> page, SortEntity fallbackSort) {
+        SortEntity sortEntity;
+        if (page.getSort() != null && page.getSort().isSorted() && !page.getSort().isEmpty()) {
+            var order = page.getSort().toList().getFirst();
+            sortEntity = new SortEntity(order.getProperty(), order.getDirection().name());
+        } else if (fallbackSort != null) {
+            sortEntity = fallbackSort;
+        } else {
+            sortEntity = new SortEntity("id", "ASC");
+        }
+
         return new PaginatedEntity<Product>(
                 page.getNumber(),
                 page.getSize(),
@@ -82,8 +96,7 @@ public class ProductMapper {
                 page.isFirst(),
                 page.isLast(),
                 page.isEmpty(),
-                new SortEntity(page.getSort().toList().getFirst().getProperty(),
-                        page.getSort().toList().getFirst().getDirection().name()));
+                sortEntity);
     }
 
     public ProductVariant toProductVariantDomain(ProductVariantJpaEntity variant) {

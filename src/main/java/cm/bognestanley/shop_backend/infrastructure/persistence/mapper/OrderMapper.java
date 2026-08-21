@@ -126,6 +126,20 @@ public class OrderMapper {
     }
 
     public PaginatedEntity<Order> toPaginatedDomain(Page<OrderJpaEntity> page) {
+        return toPaginatedDomain(page, null);
+    }
+
+    public PaginatedEntity<Order> toPaginatedDomain(Page<OrderJpaEntity> page, SortEntity fallbackSort) {
+        SortEntity sortEntity;
+        if (page.getSort() != null && page.getSort().isSorted() && !page.getSort().isEmpty()) {
+            var order = page.getSort().toList().getFirst();
+            sortEntity = new SortEntity(order.getProperty(), order.getDirection().name());
+        } else if (fallbackSort != null) {
+            sortEntity = fallbackSort;
+        } else {
+            sortEntity = new SortEntity("id", "ASC");
+        }
+
         return new PaginatedEntity<Order>(
                 page.getNumber(),
                 page.getSize(),
@@ -135,7 +149,6 @@ public class OrderMapper {
                 page.isFirst(),
                 page.isLast(),
                 page.isEmpty(),
-                new SortEntity(page.getSort().toList().getFirst().getProperty(),
-                        page.getSort().toList().getFirst().getDirection().name()));
+                sortEntity);
     }
 }
