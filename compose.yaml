@@ -1,7 +1,9 @@
 services:
 
   app:
-    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to an immutable image reference}
+    build:
+      context: .
+      dockerfile: Dockerfile
 
     container_name: shop-backend-app
 
