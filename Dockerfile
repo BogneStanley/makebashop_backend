@@ -2,7 +2,7 @@
 # Build stage
 #################################
 
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:21.0.6_7-jdk AS builder
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ RUN ./mvnw clean package -DskipTests
 # Runtime stage
 #################################
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21.0.6_7-jre
 
 
 WORKDIR /app
@@ -40,9 +40,12 @@ COPY --from=builder /app/target/*.jar app.jar
 
 
 
-RUN useradd -m spring && \
-    mkdir -p /app/uploads && \
-    chown -R spring:spring /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m --uid 10001 spring \
+    && mkdir -p /app/uploads \
+    && chown -R spring:spring /app
 
 USER spring
 

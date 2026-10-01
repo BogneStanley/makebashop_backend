@@ -1,41 +1,40 @@
 services:
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE to an immutable image reference}
 
     container_name: shop-backend-app
 
-    ports:
-      - "8081:8080"
-
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL:?Set DB_URL}
+      DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      REDIS_HOST: ${REDIS_HOST:?Set REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:?Set REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Set CORS_ALLOWED_ORIGINS}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?Set PUBLIC_BASE_URL}
 
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
     restart: unless-stopped
     networks:
       - shop_backend_network
       - proxy
+      - monitoring
 
     volumes:
       - uploads_data:/app/uploads
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.shopbackend.rule=Host(`${API_HOST:-api.shop.local}`)"
+      - "traefik.http.routers.shopbackend.rule=Host(`${API_HOST:?Set API_HOST}`)"
       - "traefik.http.routers.shopbackend.entrypoints=websecure"
       - "traefik.http.routers.shopbackend.tls=true"
       - "traefik.http.routers.shopbackend.tls.certresolver=letsencrypt"
@@ -43,7 +42,7 @@ services:
       - "traefik.http.routers.shopbackend.middlewares=secureHeaders@file,compression@file"
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8081/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -58,17 +57,14 @@ services:
 
   postgres:
 
-    image: postgres:17
+    image: ${POSTGRES_IMAGE:?Set POSTGRES_IMAGE to an immutable image reference}
 
     container_name: shop_backend_postgres
 
-    ports:
-      - "5432:5432"
-
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -81,32 +77,39 @@ services:
         max-size: "10m"
         max-file: "5"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
   
   redis:
-    image: redis:7
+    image: ${REDIS_IMAGE:?Set REDIS_IMAGE to an immutable image reference}
     container_name: shop_backend_redis
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - shop_backend_network
 
   backup:
-    image: postgres:17
+    image: ${POSTGRES_IMAGE:?Set POSTGRES_IMAGE to an immutable image reference}
 
     container_name: shop_backend_backup
 
     restart: "no"
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
 
     volumes:
       - ./docker/postgres:/scripts
@@ -125,8 +128,11 @@ services:
 volumes:
   postgres_data:
   uploads_data:
+  redis_data:
 
 networks:
   shop_backend_network:
   proxy:
+    external: true
+  monitoring:
     external: true
