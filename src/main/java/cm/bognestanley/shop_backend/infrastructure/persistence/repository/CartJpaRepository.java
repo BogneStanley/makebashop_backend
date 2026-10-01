@@ -8,4 +8,6 @@ import cm.bognestanley.shop_backend.infrastructure.persistence.entity.cart.CartJ
 
 public interface CartJpaRepository extends JpaRepository<CartJpaEntity, Long> {
     Optional<CartJpaEntity> findByUserId(Long userId);
+
+    Optional<CartJpaEntity> findByGuestToken(String guestToken);
 }

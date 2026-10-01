@@ -26,6 +26,7 @@ public class CartMapper {
         CartJpaEntity entity = new CartJpaEntity();
         entity.setId(domain.getId());
         entity.setUserId(domain.getUserId());
+        entity.setGuestToken(domain.getGuestToken());
 
         if (domain.getCartItems() != null) {
             entity.setCartItems(domain.getCartItems().stream().map(this::toCartItemJpaEntity)
@@ -55,6 +56,7 @@ public class CartMapper {
         return new Cart(
                 entity.getId(),
                 entity.getUserId(),
+                entity.getGuestToken(),
                 entity.getCartItems().stream().map(this::toCartItemDomain)
                         .collect(Collectors.toCollection(ArrayList::new)));
     }

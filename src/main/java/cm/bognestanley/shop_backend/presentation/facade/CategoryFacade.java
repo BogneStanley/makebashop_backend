@@ -6,8 +6,11 @@ import cm.bognestanley.shop_backend.domain.category.entity.Category;
 import cm.bognestanley.shop_backend.presentation.dto.request.category.CategoryRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.category.CategoryResponse;
 import cm.bognestanley.shop_backend.presentation.mapper.PresCategoryMapper;
+import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,15 +23,18 @@ public class CategoryFacade {
     private final GetOneCategoryUsecase getOneCategoryUsecase;
     private final UpdateCategoryUsecase updateCategoryUsecase;
     private final PresCategoryMapper categoryMapper;
+    private final CurrentUserProvider currentUserProvider;
 
 
     public CategoryResponse createCategory(CategoryRequest request){
+        requireAdmin();
         CategoryCommand categoryCommand = categoryMapper.toCategoryCommand(request);
         Category category = createCategoryUsecase.execute(categoryCommand);
         return categoryMapper.toCategoryResponse(category);
     }
 
     public void deleteCategory(Long id){
+        requireAdmin();
         deleteCategoryUsecase.execute(id);
     }
 
@@ -46,8 +52,15 @@ public class CategoryFacade {
     }
 
     public CategoryResponse updateCategory(Long id, CategoryRequest request){
+        requireAdmin();
         CategoryCommand command = categoryMapper.toCategoryCommand(request);
         Category category = updateCategoryUsecase.execute(id, command);
         return categoryMapper.toCategoryResponse(category);
+    }
+
+    private void requireAdmin() {
+        if (!currentUserProvider.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can manage categories");
+        }
     }
 }

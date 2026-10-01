@@ -4,15 +4,17 @@ import cm.bognestanley.shop_backend.infrastructure.config.ApiProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,7 +30,12 @@ public class SecurityConfig {
         String api = apiProperties.getBasePath();
         http
                 .cors(Customizer.withDefaults())
-                .csrf(CsrfConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers(api + "/auth/login", api + "/auth/register")
+                        // A bearer token is not attached by browsers automatically, so CSRF does
+                        // not apply to native/API clients using the documented bearer mode.
+                        .ignoringRequestMatchers(new RequestHeaderRequestMatcher(HttpHeaders.AUTHORIZATION)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
@@ -36,13 +43,15 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .requestMatchers(api + "/auth/**").permitAll()
                         .requestMatchers(api + "/cart/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, api + "/products/managed", api + "/products/managed/search")
-                        .authenticated()
+                        .requestMatchers(HttpMethod.POST, api + "/orders/checkout").permitAll()
+                        .requestMatchers(api + "/orders/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/products/managed/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, api + "/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, api + "/categories").permitAll()
+                        .requestMatchers(api + "/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, api + "/categories/**").permitAll()
+                        .requestMatchers(api + "/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, api + "/contact").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, api + "/orders/checkout").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",

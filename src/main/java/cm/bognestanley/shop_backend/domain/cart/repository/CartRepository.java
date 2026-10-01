@@ -9,6 +9,8 @@ public interface CartRepository {
 
     Optional<Cart> findById(Long id);
 
+    Optional<Cart> findByGuestToken(String guestToken);
+
     Cart save(Cart cart);
 
     void delete(Cart cart);

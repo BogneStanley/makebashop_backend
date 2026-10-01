@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import cm.bognestanley.shop_backend.application.user.usecase.SeedAdminUserUsecase;
 
@@ -25,6 +26,13 @@ public class AdminUserInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         if (!adminSeedProperties.isEnabled()) {
             return;
+        }
+
+        if (!StringUtils.hasText(adminSeedProperties.getEmail())
+                || !StringUtils.hasText(adminSeedProperties.getPassword())
+                || !StringUtils.hasText(adminSeedProperties.getFirstName())
+                || !StringUtils.hasText(adminSeedProperties.getLastName())) {
+            throw new IllegalStateException("Admin seed is enabled but its configuration is incomplete");
         }
 
         boolean created = seedAdminUserUsecase.execute(

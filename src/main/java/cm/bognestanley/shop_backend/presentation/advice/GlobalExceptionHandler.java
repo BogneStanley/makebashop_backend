@@ -57,8 +57,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleStorageException(StorageException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorDataWrapper.error(ex.getMessage(), "STORAGE_ERROR"));
+        log.warn("Storage operation rejected: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorDataWrapper.error(null, "STORAGE_ERROR", "Unable to process the uploaded file"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -70,14 +71,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
         log.error(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorDataWrapper.error(ex.getMessage(), "MAX_UPLOAD_SIZE_ERROR"));
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ErrorDataWrapper.error(null, "MAX_UPLOAD_SIZE_ERROR", "Uploaded file is too large"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDataWrapper<?>> handleException(Exception ex) {
         log.error(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorDataWrapper.error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorDataWrapper.empty());
     }
 
 }

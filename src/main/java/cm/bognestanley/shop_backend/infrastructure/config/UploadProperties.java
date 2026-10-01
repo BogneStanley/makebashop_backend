@@ -13,6 +13,8 @@ public class UploadProperties {
     private String dir = "uploads";
     private String urlPrefix = "/uploads";
     private String publicBaseUrl = "http://localhost:8080";
+    private long maxFileSizeBytes = 5 * 1024 * 1024;
+    private long maxImagePixels = 20_000_000;
 
     public String relativePath(String filename) {
         return normalizedUrlPrefix() + "/" + filename;

@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -28,16 +25,12 @@ public class LocalStorageAdapter implements FileStoragePort{
 
     @Override
     public StoredFile uploadFile(FileContent fileContent) {
-        Optional<String> extension = getFileExtension(fileContent.filename());
-
-        if(extension.isEmpty()) {
-            throw new StorageException("File extension is required");
-        }
-
-        String nameToSaveFile = getFilenameWithoutExtension(fileContent.filename()) + "-" + UUID.randomUUID() + "." + extension.get();
+        String extension = extensionFor(fileContent.contentType());
+        String nameToSaveFile = UUID.randomUUID() + "." + extension;
 
         Path uploadDir = Paths.get(uploadProperties.getDir()).toAbsolutePath().normalize();
-        Path targetPath = uploadDir.resolve(nameToSaveFile);
+        Path targetPath = uploadDir.resolve(nameToSaveFile).normalize();
+        ensureWithinUploadDirectory(uploadDir, targetPath);
 
         try {
             Files.createDirectories(uploadDir);
@@ -49,7 +42,7 @@ public class LocalStorageAdapter implements FileStoragePort{
 
         return new StoredFile(
                 nameToSaveFile,
-                fileContent.filename(),
+                nameToSaveFile,
                 fileContent.contentType(),
                 uploadProperties.relativePath(nameToSaveFile));
     }
@@ -57,7 +50,9 @@ public class LocalStorageAdapter implements FileStoragePort{
     @Override
     public void deleteFile(String storageKey) {
         try {
-            Path targetPath = Paths.get(uploadProperties.getDir(), storageKey);
+            Path uploadDir = Paths.get(uploadProperties.getDir()).toAbsolutePath().normalize();
+            Path targetPath = uploadDir.resolve(storageKey).normalize();
+            ensureWithinUploadDirectory(uploadDir, targetPath);
             Files.delete(targetPath);
         } catch (IOException e) {
             log.error("Failed to delete file: {}", e.getMessage());
@@ -70,16 +65,18 @@ public class LocalStorageAdapter implements FileStoragePort{
         return uploadProperties.getDir();
     }
 
-    private Optional<String> getFileExtension(String filename){
-        List<String> parts = Arrays.stream(filename.split("\\.")).toList();
-        if (parts.size() < 2) {
-            return Optional.empty();
-        }
-        return Optional.of(parts.getLast());
+    private String extensionFor(String contentType) {
+        return switch (contentType) {
+            case "image/jpeg" -> "jpg";
+            case "image/png" -> "png";
+            default -> throw new StorageException("Unsupported image content type");
+        };
     }
 
-    private String getFilenameWithoutExtension(String filename){
-        return Arrays.stream(filename.split("\\.")).toList().getFirst().replace(" ","");
+    private void ensureWithinUploadDirectory(Path uploadDir, Path targetPath) {
+        if (!targetPath.startsWith(uploadDir)) {
+            throw new StorageException("Invalid storage path");
+        }
     }
 
 }

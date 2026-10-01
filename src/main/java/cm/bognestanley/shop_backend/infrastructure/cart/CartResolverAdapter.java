@@ -1,7 +1,8 @@
 package cm.bognestanley.shop_backend.infrastructure.cart;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cm.bognestanley.shop_backend.application.cart.port.CartResolver;
 import cm.bognestanley.shop_backend.domain.cart.entity.Cart;
@@ -14,43 +15,46 @@ import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 public class CartResolverAdapter implements CartResolver {
 
     private final CurrentUserProvider currentUserProvider;
-    private final HeaderCartContextProvider headerCartContextProvider;
+    private final GuestCartCookieService guestCartCookieService;
     private final CartRepository cartRepository;
 
-    public CartResolverAdapter(CurrentUserProvider currentUserProvider, HeaderCartContextProvider headerCartContextProvider, CartRepository cartRepository) {
+    public CartResolverAdapter(CurrentUserProvider currentUserProvider, GuestCartCookieService guestCartCookieService, CartRepository cartRepository) {
         this.currentUserProvider = currentUserProvider;
-        this.headerCartContextProvider = headerCartContextProvider;
+        this.guestCartCookieService = guestCartCookieService;
         this.cartRepository = cartRepository;
     }
 
     @Override
     public Cart resolveCart() {
-        if(currentUserProvider.getCurrentUserId().isPresent()){
-            return cartRepository.findByUserId(currentUserProvider.getCurrentUserId().get())
-                    .orElseGet(() -> createNewCart(currentUserProvider.getCurrentUserId().get()));
+        var currentUserId = currentUserProvider.getCurrentUserId();
+        if (currentUserId.isPresent()) {
+            return cartRepository.findByUserId(currentUserId.get())
+                    .orElseGet(() -> Cart.create(currentUserId.get()));
         }
-        else if(headerCartContextProvider.getCartIdFromHeader().isPresent()){
-            Cart cart = cartRepository.findById(headerCartContextProvider.getCartIdFromHeader().get())
-                    .orElseGet(() -> createNewCart(null));
-            
-            if(cart.getUserId() != null){
-                throw new AccessDeniedException("You can't access this cart");
-            }
+        ServletRequestAttributes attributes = currentRequestAttributes();
+        var guestToken = guestCartCookieService.getToken(attributes.getRequest());
+        if (guestToken.isPresent()) {
+            return cartRepository.findByGuestToken(guestToken.get())
+                    .orElseThrow(() -> {
+                        guestCartCookieService.clearToken(attributes.getResponse());
+                        return new DomainErrorException(ErrorCode.CART_NOT_FOUND, "Guest cart not found");
+                    });
+        }
 
-            return cart;
-        }
-        return createNewCart(null);
+        Cart cart = Cart.createGuest(guestCartCookieService.generateToken());
+        Cart savedCart = cartRepository.save(cart);
+        guestCartCookieService.writeToken(attributes.getResponse(), savedCart.getGuestToken());
+        return savedCart;
         
     }
 
-    @Override
-    public Cart resolveCart(Long cartId) {
-        return cartRepository.findById(cartId)
-                .orElseThrow(() -> new DomainErrorException(ErrorCode.CART_NOT_FOUND, "Cart not found"));
-    }
-
-    private Cart createNewCart(Long userId) {
-        return Cart.create(userId);
+    private ServletRequestAttributes currentRequestAttributes() {
+        Object attributes = RequestContextHolder.getRequestAttributes();
+        if (!(attributes instanceof ServletRequestAttributes servletAttributes)
+                || servletAttributes.getResponse() == null) {
+            throw new IllegalStateException("Guest carts require an active HTTP request");
+        }
+        return servletAttributes;
     }
     
 }

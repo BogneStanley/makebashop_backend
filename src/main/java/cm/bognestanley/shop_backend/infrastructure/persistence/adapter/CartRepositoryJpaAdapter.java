@@ -39,6 +39,11 @@ public class CartRepositoryJpaAdapter implements CartRepository {
     }
 
     @Override
+    public Optional<Cart> findByGuestToken(String guestToken) {
+        return cartJpaRepository.findByGuestToken(guestToken).map(cartMapper::toDomain);
+    }
+
+    @Override
     public void delete(Cart cart) {
         cartJpaRepository.delete(cartMapper.toJpaEntity(cart));
     }

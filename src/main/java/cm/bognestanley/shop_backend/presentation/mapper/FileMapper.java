@@ -6,19 +6,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import cm.bognestanley.shop_backend.application.common.dto.FileContent;
+import cm.bognestanley.shop_backend.infrastructure.storage.ImageUploadValidator;
 
 @Component
 public class FileMapper {
 
+    private final ImageUploadValidator imageUploadValidator;
+
+    public FileMapper(ImageUploadValidator imageUploadValidator) {
+        this.imageUploadValidator = imageUploadValidator;
+    }
+
     public FileContent toFileContent(MultipartFile file) throws IOException {
-        if (file == null) {
-            return null;
-        }
-        return new FileContent(
-            file.getOriginalFilename(),
-            file.getContentType(),
-            file.getBytes()
-        );
+        return imageUploadValidator.validate(file);
     }
 
 }

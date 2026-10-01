@@ -28,6 +28,9 @@ public class CartJpaEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "guest_token", unique = true)
+    private String guestToken;
+
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItemJpaEntity> cartItems = new HashSet<>();
 

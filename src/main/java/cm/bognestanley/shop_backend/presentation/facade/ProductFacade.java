@@ -20,6 +20,7 @@ import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.domain.pagination.SortEntity;
 import cm.bognestanley.shop_backend.domain.product.entity.Product;
 import cm.bognestanley.shop_backend.infrastructure.exception.StorageException;
+import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 import cm.bognestanley.shop_backend.presentation.dto.request.product.CreateProductRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.product.ProductVariantRequest;
 import cm.bognestanley.shop_backend.presentation.dto.request.product.UpdateImagePositionRequest;
@@ -52,6 +53,7 @@ public class ProductFacade {
 
     private final PresProductMapper productMapper;
     private final FileMapper fileMapper;
+    private final CurrentUserProvider currentUserProvider;
 
     @Value("${app.currency-code:FCFA}")
     private String currencyCode;
@@ -74,6 +76,7 @@ public class ProductFacade {
     @Cacheable(value = "products", key = "#isActive + '-' + #page + '-' + #size + '-' + #sortBy + '-' + #sortOrder")
     public PaginatedEntity<ProductResponse> getAllManagedProducts(Boolean isActive, int page, int size, String sortBy,
             String sortOrder) {
+        requireAdmin();
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         return getAllProductsUsecase.execute(paginationAttribute, isActive).map(productMapper::toResponse);
@@ -86,6 +89,7 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse createProduct(CreateProductRequest request, List<MultipartFile> images) {
+        requireAdmin();
 
         if (images == null) {
             return productMapper
@@ -105,22 +109,26 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
+        requireAdmin();
         UpdateProductCommand command = productMapper.toUpdateProductCommand(id, request);
         return productMapper.toResponse(updateProductUsecase.execute(command));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse activateProduct(Long id) {
+        requireAdmin();
         return productMapper.toResponse(activateProductUsecase.execute(id));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse desactivateProduct(Long id) {
+        requireAdmin();
         return productMapper.toResponse(desactivateProductUsecase.execute(id));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(Long id) {
+        requireAdmin();
         deleteProductUsecase.execute(id);
     }
 
@@ -137,6 +145,7 @@ public class ProductFacade {
     public PaginatedEntity<ProductResponse> searchManagedProducts(String keyword, BigDecimal minPrice,
             BigDecimal maxPrice, Boolean inStock, Boolean isActive, List<Long> categoryIds, int page, int size,
             String sortBy, String sortOrder) {
+        requireAdmin();
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
         PaginatedEntity<Product> products = searchProductsUsecase.execute(keyword, minPrice, maxPrice, currencyCode, inStock,
@@ -147,6 +156,7 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse addImagesToProduct(Long productId, List<MultipartFile> files) {
+        requireAdmin();
         return productMapper.toResponse(bulkAddImageUsecase.execute(productId, files.stream().map(file -> {
             try {
                 return fileMapper.toFileContent(file);
@@ -158,6 +168,7 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse addVariantsToProduct(Long productId, List<ProductVariantRequest> variants) {
+        requireAdmin();
         List<CreateProductVariantCommand> commandVariants = variants.stream()
                 .map(productMapper::toCreateProductVariantCommand).toList();
         return productMapper.toResponse(bulkAddVariantUsecase.execute(productId, commandVariants));
@@ -165,16 +176,19 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse deleteImagesFromProduct(Long productId, List<Long> imageIds) {
+        requireAdmin();
         return productMapper.toResponse(bulkDeleteImageUsecase.execute(productId, imageIds));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse deleteVariantsFromProduct(Long productId, List<Long> variantIds) {
+        requireAdmin();
         return productMapper.toResponse(bulkDeleteVarianteUsecase.execute(productId, variantIds));
     }
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateImagesPosition(Long productId, List<UpdateImagePositionRequest> imagesPosition) {
+        requireAdmin();
         List<UpdateImagePositionCommand> commands = imagesPosition.stream()
                 .map(productMapper::toUpdateImagePositionCommand).toList();
         return productMapper.toResponse(bulkUpdateImagePosition.execute(productId, commands));
@@ -182,6 +196,7 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse updateVariant(Long productId, Long variantId, ProductVariantRequest request) {
+        requireAdmin();
         return productMapper.toResponse(
                 updateVariantUsecase.execute(productId,
                         productMapper.toUpdateProductVariantCommand(variantId, request)));
@@ -189,7 +204,16 @@ public class ProductFacade {
 
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponse setProductImageAsPrimary(Long productId, Long imageId) {
+        requireAdmin();
         return productMapper.toResponse(setImageAsPrimaryUsecase.execute(productId, imageId));
+    }
+
+    private void requireAdmin() {
+        if (!currentUserProvider.isAdmin()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "Only admins can manage products");
+        }
     }
 
 }

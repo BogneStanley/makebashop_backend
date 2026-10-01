@@ -14,7 +14,10 @@ import cm.bognestanley.shop_backend.domain.pagination.SortEntity;
 import cm.bognestanley.shop_backend.presentation.dto.request.order.CreateOrderRequest;
 import cm.bognestanley.shop_backend.presentation.dto.response.order.OrderResponse;
 import cm.bognestanley.shop_backend.presentation.mapper.PresOrderMapper;
+import cm.bognestanley.shop_backend.infrastructure.security.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 @RequiredArgsConstructor
@@ -27,8 +30,10 @@ public class OrderFacade {
     private final MarkOrderAsPaidUsecase markOrderAsPaidUsecase;
     private final SearchOrderUsecase searchOrderUsecase;
     private final PresOrderMapper orderMapper;
+    private final CurrentUserProvider currentUserProvider;
 
     public PaginatedEntity<OrderResponse> findAllOrders(int page, int size, String sortBy, String sortOrder) {
+        requireAdmin();
 
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
@@ -40,6 +45,7 @@ public class OrderFacade {
     public PaginatedEntity<OrderResponse> searchOrders(String keyword, LocalDateTime startDate,
             LocalDateTime endDate,
             String status, int page, int size, String sortBy, String sortOrder) {
+        requireAdmin();
 
         PaginationAttribute paginationAttribute = new PaginationAttribute(page, size,
                 new SortEntity(sortBy, sortOrder));
@@ -49,14 +55,17 @@ public class OrderFacade {
     }
 
     public OrderResponse getOrderById(Long id) {
+        requireAdmin();
         return orderMapper.toOrderResponse(getOrderUsecase.execute(id));
     }
 
     public void markOrderAsCancelled(Long id) {
+        requireAdmin();
         markOrderAsCancelledUsecase.execute(id);
     }
 
     public void markOrderAsPaid(Long id) {
+        requireAdmin();
         markOrderAsPaidUsecase.execute(id);
     }
 
@@ -70,6 +79,12 @@ public class OrderFacade {
                 request.note());
         Order order = createOrderUsecase.execute(command);
         return orderMapper.toOrderResponse(order);
+    }
+
+    private void requireAdmin() {
+        if (!currentUserProvider.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can manage orders");
+        }
     }
 
 }

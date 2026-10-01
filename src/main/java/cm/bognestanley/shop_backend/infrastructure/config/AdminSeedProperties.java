@@ -10,9 +10,9 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "app.admin.seed")
 public class AdminSeedProperties {
 
-    private boolean enabled = true;
-    private String email = "admin@shop.local";
-    private String password = "Admin@123456";
-    private String firstName = "Admin";
-    private String lastName = "User";
+    private boolean enabled = false;
+    private String email;
+    private String password;
+    private String firstName;
+    private String lastName;
 }

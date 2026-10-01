@@ -10,20 +10,25 @@ import cm.bognestanley.shop_backend.domain.product.entity.ProductVariant;
 public class Cart {
     private Long id;
     private Long userId;
+    private String guestToken;
     private List<CartItem> cartItems;
 
-    public Cart(Long id, Long userId, List<CartItem> cartItems) {
+    public Cart(Long id, Long userId, String guestToken, List<CartItem> cartItems) {
         this.id = id;
         this.userId = userId;
+        this.guestToken = guestToken;
         this.cartItems = cartItems;
     }
 
-    public static Cart create() {
-        return new Cart(null, null, new ArrayList<>());
+    public static Cart createGuest(String guestToken) {
+        if (guestToken == null || guestToken.isBlank()) {
+            throw new IllegalArgumentException("Guest cart token is required");
+        }
+        return new Cart(null, null, guestToken, new ArrayList<>());
     }
 
     public static Cart create(Long userId) {
-        return new Cart(null, userId, new ArrayList<>());
+        return new Cart(null, userId, null, new ArrayList<>());
     }
 
     public void addProductVariant(Product product, ProductVariant variant, int quantity) {
@@ -74,5 +79,9 @@ public class Cart {
 
     public Long getUserId() {
         return userId;
+    }
+
+    public String getGuestToken() {
+        return guestToken;
     }
 }
