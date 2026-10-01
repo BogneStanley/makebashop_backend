@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import cm.bognestanley.shop_backend.domain.common.exception.DomainErrorException;
 import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
@@ -24,9 +23,17 @@ public class Order {
     private String note;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long cartId;
+    private String idempotencyKey;
+    private String requestFingerprint;
+    private LocalDateTime reservationExpiresAt;
+    private LocalDateTime paidAt;
+    private LocalDateTime cancelledAt;
 
     public Order(Long id, String orderNumber, Customer customer, List<OrderLineItem> orderLineItems,
-            OrderStatus status, String note, LocalDateTime createdAt, LocalDateTime updatedAt) {
+            OrderStatus status, String note, LocalDateTime createdAt, LocalDateTime updatedAt,
+            Long cartId, String idempotencyKey, String requestFingerprint,
+            LocalDateTime reservationExpiresAt, LocalDateTime paidAt, LocalDateTime cancelledAt) {
         if (orderNumber == null) {
             throw new DomainErrorException(ErrorCode.INVALID_INPUT, "Order number cannot be null");
         }
@@ -42,16 +49,31 @@ public class Order {
         this.orderLineItems = orderLineItems != null ? orderLineItems : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.cartId = cartId;
+        this.idempotencyKey = idempotencyKey;
+        this.requestFingerprint = requestFingerprint;
+        this.reservationExpiresAt = reservationExpiresAt;
+        this.paidAt = paidAt;
+        this.cancelledAt = cancelledAt;
     }
 
     public static Order create(Customer customer, String note) {
         return new Order(null, UUID.randomUUID().toString(), customer, new ArrayList<>(),
-                OrderStatus.PENDING, note, LocalDateTime.now(), LocalDateTime.now());
+                OrderStatus.PENDING, note, LocalDateTime.now(), LocalDateTime.now(),
+                null, null, null, null, null, null);
     }
 
     public static Order create(Customer customer, String note, List<OrderLineItem> orderLineItems) {
         return new Order(null, UUID.randomUUID().toString(), customer, orderLineItems,
-                OrderStatus.PENDING, note, LocalDateTime.now(), LocalDateTime.now());
+                OrderStatus.PENDING, note, LocalDateTime.now(), LocalDateTime.now(),
+                null, null, null, null, null, null);
+    }
+
+    public static Order create(Customer customer, String note, List<OrderLineItem> orderLineItems,
+            Long cartId, String idempotencyKey, String requestFingerprint, LocalDateTime reservationExpiresAt) {
+        return new Order(null, "ORD-" + UUID.randomUUID(), customer, orderLineItems,
+                OrderStatus.PENDING, note, LocalDateTime.now(), LocalDateTime.now(),
+                cartId, idempotencyKey, requestFingerprint, reservationExpiresAt, null, null);
     }
 
     public Long getId() {
@@ -99,6 +121,13 @@ public class Order {
         return updatedAt;
     }
 
+    public Long getCartId() { return cartId; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public String getRequestFingerprint() { return requestFingerprint; }
+    public LocalDateTime getReservationExpiresAt() { return reservationExpiresAt; }
+    public LocalDateTime getPaidAt() { return paidAt; }
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
+
     // Update methods
     public void updateStatus(OrderStatus status) {
         if (status == null) {
@@ -143,11 +172,11 @@ public class Order {
     }
 
     public void markAsPaid() {
-        if (this.status == OrderStatus.PAID || this.status == OrderStatus.CANCELLED) {
+        if (this.status != OrderStatus.PENDING) {
             throw new DomainErrorException(ErrorCode.INVALID_ORDER_SWITCH_STATUS);
         }
-        updateProductVariantStock();
         this.status = OrderStatus.PAID;
+        this.paidAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -163,27 +192,11 @@ public class Order {
     }
 
     public void markAsCancelled() {
-        if (this.status == OrderStatus.PAID || this.status == OrderStatus.CANCELLED) {
+        if (this.status != OrderStatus.PENDING) {
             throw new DomainErrorException(ErrorCode.INVALID_ORDER_SWITCH_STATUS);
         }
         this.status = OrderStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-    }
-
-    private void updateProductVariantStock() {
-        this.orderLineItems = this.orderLineItems.stream().map(item -> {
-            if (!item.getProductVariant().hasSufficientStock(item.getQuantity())) {
-                throw new DomainErrorException(ErrorCode.OUT_OF_STOCK);
-            }
-
-            item.getProduct().getProductVariants().stream()
-                    .filter(variant -> variant.getId().equals(item.getProductVariant().getId())).findFirst().get()
-                    .decreaseStock(item.getQuantity());
-
-            item.getProductVariant().decreaseStock(item.getQuantity());
-
-            return item;
-        }).collect(Collectors.toCollection(ArrayList::new));
-
     }
 }

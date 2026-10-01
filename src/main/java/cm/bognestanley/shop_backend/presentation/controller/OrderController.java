@@ -25,10 +25,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Order", description = "Order API")
 public class OrderController {
 
@@ -90,9 +96,13 @@ public class OrderController {
             @ApiResponse(responseCode = "200", description = "Order created"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<OrderResponse>> createOrder(@RequestBody CreateOrderRequest request) {
+    public ResponseEntity<ResponseDataWrapper<OrderResponse>> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            @RequestHeader("Idempotency-Key")
+            @NotBlank(message = "Idempotency-Key is required")
+            @Size(max = 255, message = "Idempotency-Key must not exceed 255 characters") String idempotencyKey) {
         return ResponseEntity.ok(ResponseDataWrapper.ok(
-                orderFacade.createOrder(request)));
+                orderFacade.createOrder(request, idempotencyKey)));
     }
 
     @PutMapping("{orderId}/paid")

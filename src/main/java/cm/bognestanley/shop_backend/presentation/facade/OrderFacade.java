@@ -69,14 +69,14 @@ public class OrderFacade {
         markOrderAsPaidUsecase.execute(id);
     }
 
-    public OrderResponse createOrder(CreateOrderRequest request) {
+    public OrderResponse createOrder(CreateOrderRequest request, String idempotencyKey) {
         CreateOrderCommand command = new CreateOrderCommand(
                 new CustomerCommand(
                         request.firstName(),
                         request.lastName(),
                         request.email(),
                         request.phoneNumber()),
-                request.note());
+                request.note(), idempotencyKey);
         Order order = createOrderUsecase.execute(command);
         return orderMapper.toOrderResponse(order);
     }

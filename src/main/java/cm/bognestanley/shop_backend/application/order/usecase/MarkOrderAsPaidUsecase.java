@@ -6,19 +6,15 @@ import cm.bognestanley.shop_backend.application.common.exception.ApplicationExce
 import cm.bognestanley.shop_backend.domain.common.exception.ErrorCode;
 import cm.bognestanley.shop_backend.domain.order.entity.Order;
 import cm.bognestanley.shop_backend.domain.order.repository.OrderRepository;
-import cm.bognestanley.shop_backend.domain.product.entity.Product;
-import cm.bognestanley.shop_backend.domain.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 
 @Service
 public class MarkOrderAsPaidUsecase {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
 
-    public MarkOrderAsPaidUsecase(OrderRepository orderRepository, ProductRepository productRepository) {
+    public MarkOrderAsPaidUsecase(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
     }
 
     @Transactional
@@ -26,10 +22,6 @@ public class MarkOrderAsPaidUsecase {
         Order order = orderRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         order.markAsPaid();
-
-        for (Product item : order.getProducts()) {
-            productRepository.save(item);
-        }
 
         return orderRepository.save(order);
     }

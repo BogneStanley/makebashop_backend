@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import jakarta.persistence.EntityManager;
+
 import cm.bognestanley.shop_backend.domain.common.valueObject.Money;
 import cm.bognestanley.shop_backend.domain.order.entity.Order;
 import cm.bognestanley.shop_backend.domain.order.entity.OrderLineItem;
@@ -25,9 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderMapper {
 
     private final ProductMapper productMapper;
+    private final EntityManager entityManager;
 
-    public OrderMapper(ProductMapper productMapper) {
+    public OrderMapper(ProductMapper productMapper, EntityManager entityManager) {
         this.productMapper = productMapper;
+        this.entityManager = entityManager;
     }
 
     public OrderJpaEntity toJpa(Order order) {
@@ -42,6 +46,12 @@ public class OrderMapper {
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
+                .cartId(order.getCartId())
+                .idempotencyKey(order.getIdempotencyKey())
+                .requestFingerprint(order.getRequestFingerprint())
+                .reservationExpiresAt(order.getReservationExpiresAt())
+                .paidAt(order.getPaidAt())
+                .cancelledAt(order.getCancelledAt())
                 .orderLineItems(new ArrayList<>())
                 .build();
 
@@ -70,13 +80,20 @@ public class OrderMapper {
                 toOrderStatusDomain(orderJpaEntity.getStatus()),
                 orderJpaEntity.getNote(),
                 orderJpaEntity.getCreatedAt(),
-                orderJpaEntity.getUpdatedAt());
+                orderJpaEntity.getUpdatedAt(),
+                orderJpaEntity.getCartId(),
+                orderJpaEntity.getIdempotencyKey(),
+                orderJpaEntity.getRequestFingerprint(),
+                orderJpaEntity.getReservationExpiresAt(),
+                orderJpaEntity.getPaidAt(),
+                orderJpaEntity.getCancelledAt());
     }
 
     public OrderLineItemJpaEntity toOrderLineItemJpaEntity(OrderLineItem orderLineItem) {
-        ProductJpaEntity productJpaEntity = productMapper.toJpa(orderLineItem.getProduct());
-        ProductVariantJpaEntity productVariantJpaEntity = productMapper
-                .toProductVariantJpa(orderLineItem.getProductVariant());
+        ProductJpaEntity productJpaEntity = entityManager.getReference(
+                ProductJpaEntity.class, orderLineItem.getProduct().getId());
+        ProductVariantJpaEntity productVariantJpaEntity = entityManager.getReference(
+                ProductVariantJpaEntity.class, orderLineItem.getProductVariant().getId());
 
         OrderLineItemJpaEntity orderLineItemJpaEntity = OrderLineItemJpaEntity.builder()
                 .id(orderLineItem.getId())

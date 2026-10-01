@@ -10,6 +10,10 @@ import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 public interface OrderRepository {
     Optional<Order> findById(Long id);
 
+    Optional<Order> findByIdempotencyKey(String idempotencyKey);
+
+    java.util.List<Order> findExpiredPendingReservations(LocalDateTime now);
+
     PaginatedEntity<Order> findAll(PaginationAttribute paginationAttribute);
 
     PaginatedEntity<Order> search(String orderNumber, String status, LocalDateTime startDate, LocalDateTime endDate, PaginationAttribute paginationAttribute);

@@ -16,6 +16,7 @@ import cm.bognestanley.shop_backend.domain.order.repository.OrderRepository;
 import cm.bognestanley.shop_backend.domain.pagination.PaginatedEntity;
 import cm.bognestanley.shop_backend.domain.pagination.PaginationAttribute;
 import cm.bognestanley.shop_backend.infrastructure.persistence.entity.order.OrderJpaEntity;
+import cm.bognestanley.shop_backend.infrastructure.persistence.entity.order.OrderStatusJpa;
 import cm.bognestanley.shop_backend.infrastructure.persistence.mapper.OrderMapper;
 import cm.bognestanley.shop_backend.infrastructure.persistence.repository.OrderJpaRepository;
 import cm.bognestanley.shop_backend.infrastructure.persistence.specidication.OrderSpecification;
@@ -36,6 +37,17 @@ public class OrderProductRepositoryJpaAdapter implements OrderRepository {
     @Override
     public Optional<Order> findById(Long id) {
         return orderJpaRepository.findById(id).map(orderMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Order> findByIdempotencyKey(String idempotencyKey) {
+        return orderJpaRepository.findByIdempotencyKey(idempotencyKey).map(orderMapper::toDomain);
+    }
+
+    @Override
+    public java.util.List<Order> findExpiredPendingReservations(LocalDateTime now) {
+        return orderJpaRepository.findExpiredPendingReservationsForUpdate(OrderStatusJpa.PENDING, now)
+                .stream().map(orderMapper::toDomain).toList();
     }
 
     @Override
