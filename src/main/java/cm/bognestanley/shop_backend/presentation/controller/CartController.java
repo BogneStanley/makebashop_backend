@@ -13,15 +13,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
 @Tag(name = "Cart", description = "Cart management")
+@Validated
 public class CartController {
 
     private final CartFacade cartFacade;
@@ -81,7 +84,7 @@ public class CartController {
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<CartResponse>> removeFromCart(@PathVariable Long variantId) {
+    public ResponseEntity<ResponseDataWrapper<CartResponse>> removeFromCart(@PathVariable @Positive Long variantId) {
         CartResponse cartResponse = cartFacade.removeVariantToCart(variantId);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(cartResponse, "CART_ITEM_REMOVED", "Cart item removed successfully"));

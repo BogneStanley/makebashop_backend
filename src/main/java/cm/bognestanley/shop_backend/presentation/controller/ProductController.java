@@ -41,12 +41,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
 @Tag(name = "Product", description = "Product management")
+@Validated
 public class ProductController {
 
     private final ProductFacade productFacade;
@@ -58,8 +63,8 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
         PaginatedEntity<ProductResponse> paginatedEntity = productFacade.getAllProducts(page, size, sortBy, sortOrder);
@@ -76,8 +81,8 @@ public class ProductController {
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> getAllManagedProducts(
             @RequestParam(required = false) Boolean isActive,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
         PaginatedEntity<ProductResponse> paginatedEntity = productFacade.getAllManagedProducts(isActive, page, size,
@@ -92,8 +97,8 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> searchProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder,
             @RequestParam(required = false) String name,
@@ -115,8 +120,8 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<ProductResponse>>> searchManagedProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder,
             @RequestParam(required = false) String name,
@@ -147,7 +152,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Product found"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<ProductResponse>> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<ProductResponse>> getProductById(@PathVariable @Positive Long id) {
         ProductResponse productResponse = productFacade.getProduct(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(productResponse));
     }
@@ -189,7 +194,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<Void>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<Void>> deleteProduct(@PathVariable @Positive Long id) {
         productFacade.deleteProduct(id);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(null, "PRODUCT_DELETED", "Product deleted successfully"));
@@ -205,7 +210,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> updateProduct(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateProductRequest request) {
         ProductResponse productResponse = productFacade.updateProduct(id, request);
         return ResponseEntity
@@ -220,7 +225,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<ProductResponse>> activateProduct(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<ProductResponse>> activateProduct(@PathVariable @Positive Long id) {
         ProductResponse productResponse = productFacade.activateProduct(id);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_ACTIVATED", "Product activated successfully"));
@@ -234,7 +239,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<ProductResponse>> deactivateProduct(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<ProductResponse>> deactivateProduct(@PathVariable @Positive Long id) {
         ProductResponse productResponse = productFacade.desactivateProduct(id);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_DEACTIVATED", "Product deactivated successfully"));
@@ -251,8 +256,8 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> updateVariant(
-            @PathVariable Long productId,
-            @PathVariable Long variantId,
+            @PathVariable @Positive Long productId,
+            @PathVariable @Positive Long variantId,
             @Valid @RequestBody ProductVariantRequest request) {
         ProductResponse productResponse = productFacade.updateVariant(productId, variantId, request);
         return ResponseEntity
@@ -269,7 +274,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> addVariantsToProduct(
-            @PathVariable Long productId,
+            @PathVariable @Positive Long productId,
             @Valid @RequestBody AddVariantsRequest requests) {
         ProductResponse productResponse = productFacade.addVariantsToProduct(productId, requests.variants());
         return ResponseEntity
@@ -286,7 +291,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> deleteVariants(
-            @PathVariable Long productId,
+            @PathVariable @Positive Long productId,
             @Valid @RequestBody DeleteVariantsRequest requests) {
         ProductResponse productResponse = productFacade.deleteVariantsFromProduct(productId, requests.variantIds());
         return ResponseEntity
@@ -303,7 +308,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> deleteImages(
-            @PathVariable Long productId,
+            @PathVariable @Positive Long productId,
             @Valid @RequestBody DeleteImagesRequest requests) {
         ProductResponse productResponse = productFacade.deleteImagesFromProduct(productId, requests.imageIds());
         return ResponseEntity
@@ -320,7 +325,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> addImages(
-            @PathVariable Long productId,
+            @PathVariable @Positive Long productId,
             @RequestParam("images") List<MultipartFile> images) {
         ProductResponse productResponse = productFacade.addImagesToProduct(productId, images);
         return ResponseEntity
@@ -338,7 +343,7 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> updateImagePosition(
-            @PathVariable Long productId,
+            @PathVariable @Positive Long productId,
             @Valid @RequestBody UpdateImagesPositionRequest request) {
         ProductResponse productResponse = productFacade.updateImagesPosition(productId, request.imagesPosition());
         return ResponseEntity
@@ -355,8 +360,8 @@ public class ProductController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<ProductResponse>> setImageAsPrimary(
-            @PathVariable Long productId,
-            @PathVariable Long imageId) {
+            @PathVariable @Positive Long productId,
+            @PathVariable @Positive Long imageId) {
         ProductResponse productResponse = productFacade.setProductImageAsPrimary(productId, imageId);
         return ResponseEntity
                 .ok(ResponseDataWrapper.ok(productResponse, "PRODUCT_IMAGE_SET_AS_PRIMARY", "Product image set as primary successfully"));

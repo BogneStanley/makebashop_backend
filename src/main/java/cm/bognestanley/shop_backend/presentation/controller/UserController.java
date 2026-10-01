@@ -13,8 +13,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +32,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 @Tag(name = "User Management", description = "Admin user management endpoints")
+@SecurityRequirement(name = "bearerAuth")
+@Validated
 public class UserController {
 
     private final UserFacade userFacade;
@@ -60,8 +67,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin only", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<UserResponse>>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
 
@@ -85,7 +92,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Email already exists", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<UserResponse>> updateUser(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateUserRequest request) {
         UserResponse userResponse = userFacade.updateUser(id, request);
         return ResponseEntity.ok(ResponseDataWrapper.ok(userResponse, "USER_UPDATED", "User updated successfully"));
@@ -98,7 +105,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin only", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<Void>> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<Void>> deleteUser(@PathVariable @Positive Long id) {
         userFacade.deleteUser(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(null, "USER_DELETED", "User deleted successfully"));
     }
@@ -110,7 +117,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin only", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<UserResponse>> activateUser(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<UserResponse>> activateUser(@PathVariable @Positive Long id) {
         UserResponse userResponse = userFacade.activateUser(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(userResponse, "USER_ACTIVATED", "User activated successfully"));
     }
@@ -122,7 +129,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Admin only", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(schema = @Schema(implementation = cm.bognestanley.shop_backend.presentation.dto.response.common.ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<UserResponse>> deactivateUser(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<UserResponse>> deactivateUser(@PathVariable @Positive Long id) {
         UserResponse userResponse = userFacade.desactivateUser(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(userResponse, "USER_DEACTIVATED", "User deactivated successfully"));
     }

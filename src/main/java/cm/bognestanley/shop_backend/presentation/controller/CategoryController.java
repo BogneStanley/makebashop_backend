@@ -12,15 +12,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@Validated
 public class CategoryController {
     private final CategoryFacade categoryFacade;
 
@@ -28,11 +31,8 @@ public class CategoryController {
     @Operation(summary = "Get all categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ResponseDataWrapper<List<CategoryResponse>>> getCategories() {
         List<CategoryResponse> categoryResponse = categoryFacade.getCategories();
         return ResponseEntity.ok(ResponseDataWrapper.ok(categoryResponse, "CATEGORIES_RETRIEVED", "Categories retrieved successfully"));
@@ -42,12 +42,10 @@ public class CategoryController {
     @Operation(summary = "Get one categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Category retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid category identifier", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ResponseDataWrapper<CategoryResponse>> getCategory(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<CategoryResponse>> getCategory(@PathVariable @Positive Long id) {
         CategoryResponse categoryResponse = categoryFacade.getCategory(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(categoryResponse, "CATEGORY_RETRIEVED", "Category retrieved successfully"));
     }
@@ -82,7 +80,7 @@ public class CategoryController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ResponseDataWrapper<CategoryResponse>> updateCategory(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody CategoryRequest request
     ) {
         CategoryResponse response = categoryFacade.updateCategory(id, request);
@@ -100,7 +98,7 @@ public class CategoryController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ResponseDataWrapper<?>> deleteCategory(
-            @PathVariable Long id
+            @PathVariable @Positive Long id
     ) {
         categoryFacade.deleteCategory(id);
         return ResponseEntity.ok(ResponseDataWrapper.ok(null, "CATEGORY_DELETED", "Category deleted successfully"));

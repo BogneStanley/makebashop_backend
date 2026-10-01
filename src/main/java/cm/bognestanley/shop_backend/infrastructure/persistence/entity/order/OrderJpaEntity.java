@@ -14,6 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+
+import java.sql.Types;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,7 +68,8 @@ public class OrderJpaEntity {
     @Column(name = "idempotency_key")
     private String idempotencyKey;
 
-    @Column(name = "request_fingerprint")
+    @JdbcTypeCode(Types.CHAR)
+    @Column(name = "request_fingerprint", length = 64)
     private String requestFingerprint;
 
     @Column(name = "reservation_expires_at")

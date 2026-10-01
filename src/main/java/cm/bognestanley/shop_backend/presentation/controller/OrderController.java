@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,6 +31,10 @@ import org.springframework.validation.annotation.Validated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/orders")
@@ -42,13 +47,16 @@ public class OrderController {
 
     @GetMapping
     @Operation(summary = "Get all orders")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders found"),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<OrderResponse>>> getAllOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder) {
 
@@ -58,12 +66,13 @@ public class OrderController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get order by id")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order found"),
             @ApiResponse(responseCode = "404", description = "Order not found", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<OrderResponse>> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<ResponseDataWrapper<OrderResponse>> getOrderById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(ResponseDataWrapper.ok(
                 orderFacade.getOrderById(id)));
     }
@@ -71,13 +80,14 @@ public class OrderController {
     // search
     @GetMapping("/search")
     @Operation(summary = "Search orders")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders found"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<PaginatedEntity<OrderResponse>>> searchOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(required = false) LocalDateTime startDate,
@@ -93,7 +103,9 @@ public class OrderController {
     @PostMapping("/checkout")
     @Operation(summary = "Create order")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order created"),
+            @ApiResponse(responseCode = "201", description = "Order created"),
+            @ApiResponse(responseCode = "400", description = "Invalid checkout request", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
+            @ApiResponse(responseCode = "409", description = "Idempotency key reused with a different checkout", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
     public ResponseEntity<ResponseDataWrapper<OrderResponse>> createOrder(
@@ -101,17 +113,18 @@ public class OrderController {
             @RequestHeader("Idempotency-Key")
             @NotBlank(message = "Idempotency-Key is required")
             @Size(max = 255, message = "Idempotency-Key must not exceed 255 characters") String idempotencyKey) {
-        return ResponseEntity.ok(ResponseDataWrapper.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDataWrapper.ok(
                 orderFacade.createOrder(request, idempotencyKey)));
     }
 
     @PutMapping("{orderId}/paid")
     @Operation(summary = "Mark order as paid")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order marked as paid"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<?>> markAsPaid(@PathVariable Long orderId) {
+    public ResponseEntity<ResponseDataWrapper<?>> markAsPaid(@PathVariable @Positive Long orderId) {
         orderFacade.markOrderAsPaid(orderId);
         return ResponseEntity.ok(ResponseDataWrapper.ok(
                 null,
@@ -121,11 +134,12 @@ public class OrderController {
 
     @PutMapping("/{orderId}/cancel")
     @Operation(summary = "Mark order as cancelled")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order marked as cancelled"),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ErrorDataWrapper.class)))
     })
-    public ResponseEntity<ResponseDataWrapper<?>> markAsCancelled(@PathVariable Long orderId) {
+    public ResponseEntity<ResponseDataWrapper<?>> markAsCancelled(@PathVariable @Positive Long orderId) {
         orderFacade.markOrderAsCancelled(orderId);
         return ResponseEntity.ok(ResponseDataWrapper.ok(
                 null,
