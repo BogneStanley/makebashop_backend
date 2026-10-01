@@ -15,8 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         AppCorsProperties.class,
         AuthCookieProperties.class,
         GuestCartCookieProperties.class,
-        OrderReservationProperties.class,
-        AdminSeedProperties.class
+        OrderReservationProperties.class
 })
 public class CorsConfig implements WebMvcConfigurer {
 

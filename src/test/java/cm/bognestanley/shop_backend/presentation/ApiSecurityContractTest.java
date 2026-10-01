@@ -1,6 +1,8 @@
 package cm.bognestanley.shop_backend.presentation;
 
 import cm.bognestanley.shop_backend.IntegrationTestSupport;
+import cm.bognestanley.shop_backend.application.common.port.PasswordEncoderPort;
+import cm.bognestanley.shop_backend.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -23,6 +25,12 @@ class ApiSecurityContractTest extends IntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoderPort passwordEncoder;
 
     @Test
     void protectedOrderEndpointReturnsTheStandardUnauthenticatedContract() throws Exception {
@@ -76,5 +84,50 @@ class ApiSecurityContractTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.paths['/api/v1/orders/checkout'].post.responses['200']").doesNotExist())
                 .andExpect(jsonPath("$.paths['/api/v1/admin/users'].get.security[0].bearerAuth").exists())
                 .andExpect(jsonPath("$.paths['/api/v1/categories'].get.security").doesNotExist());
+    }
+
+    @Test
+    void initialSetupCreatesOneBcryptAdminThenMakesTheEndpointUnavailable() throws Exception {
+        String password = "Str0ng-password!";
+
+        mockMvc.perform(get("/api/v1/setup"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.setupRequired").value(true));
+
+        mockMvc.perform(post("/api/v1/setup")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "admin@example.com",
+                                  "firstName": "Ada",
+                                  "lastName": "Lovelace",
+                                  "password": "Str0ng-password!"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.messageCode").value("INITIAL_ADMIN_CREATED"))
+                .andExpect(jsonPath("$.data.role").value("ADMIN"));
+
+        org.junit.jupiter.api.Assertions.assertTrue(passwordEncoder.matches(
+                password, userRepository.findByEmail("admin@example.com").orElseThrow().getPassword()));
+
+        mockMvc.perform(get("/api/v1/setup"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.messageCode").value("SETUP_NOT_AVAILABLE"));
+
+        mockMvc.perform(post("/api/v1/setup")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "second-admin@example.com",
+                                  "firstName": "Grace",
+                                  "lastName": "Hopper",
+                                  "password": "An0ther-strong-password!"
+                                }
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.messageCode").value("SETUP_NOT_AVAILABLE"));
     }
 }

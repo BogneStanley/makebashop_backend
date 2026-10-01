@@ -26,7 +26,8 @@ public enum ErrorCode {
     CATEGORY_ALREADY_EXIST_WITH_NAME("CATEGORY_ALREADY_EXIST_WITH_NAME","Category already exist with this name", 409),
     INVALID_HIGHLIGHT_LIST_TYPE("INVALID_HIGHLIGHT_LIST_TYPE", "Invalid highlight list type", 400),
     DUPLICATE_PRODUCT_IN_HIGHLIGHT_LIST("DUPLICATE_PRODUCT_IN_HIGHLIGHT_LIST", "Duplicate product in highlight list", 400),
-    HIGHLIGHT_LIST_TOO_LARGE("HIGHLIGHT_LIST_TOO_LARGE", "Highlight list exceeds maximum size", 400);
+    HIGHLIGHT_LIST_TOO_LARGE("HIGHLIGHT_LIST_TOO_LARGE", "Highlight list exceeds maximum size", 400),
+    SETUP_NOT_AVAILABLE("SETUP_NOT_AVAILABLE", "Initial setup is not available", 404);
     
     private final String code;
     private final String message;
