@@ -50,6 +50,22 @@ class ApiSecurityContractTest extends IntegrationTestSupport {
     }
 
     @Test
+    @WithMockUser(roles = "MANAGER")
+    void managerCanCreateCatalogCategories() throws Exception {
+        mockMvc.perform(post("/api/v1/categories")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Manager catalogue category",
+                                  "description": "Created by a manager"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messageCode").value("CATEGORY_CREATED"));
+    }
+
+    @Test
     void checkoutMissingIdempotencyKeyReturnsValidationContract() throws Exception {
         mockMvc.perform(post("/api/v1/orders/checkout")
                         .with(csrf())

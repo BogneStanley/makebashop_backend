@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
@@ -26,12 +27,15 @@ public class SecurityConfig {
     private final ApiProperties apiProperties;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CookieCsrfTokenRepository csrfTokenRepository) throws Exception {
         String api = apiProperties.getBasePath();
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfTokenRepository)
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                         .ignoringRequestMatchers(api + "/auth/login", api + "/auth/register")
                         // A bearer token is not attached by browsers automatically, so CSRF does
                         // not apply to native/API clients using the documented bearer mode.
@@ -45,12 +49,12 @@ public class SecurityConfig {
                         .requestMatchers(api + "/setup/**").permitAll()
                         .requestMatchers(api + "/cart/**").permitAll()
                         .requestMatchers(HttpMethod.POST, api + "/orders/checkout").permitAll()
-                        .requestMatchers(api + "/orders/**").hasRole("ADMIN")
-                        .requestMatchers(api + "/products/managed/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/orders/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(api + "/products/managed/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, api + "/products/**").permitAll()
-                        .requestMatchers(api + "/products/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/products/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, api + "/categories/**").permitAll()
-                        .requestMatchers(api + "/categories/**").hasRole("ADMIN")
+                        .requestMatchers(api + "/categories/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, api + "/contact").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(
@@ -59,6 +63,10 @@ public class SecurityConfig {
                                 api + "/v3/api-docs/**",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers(
+                                api + "/admin/contact-settings/**",
+                                api + "/admin/product-highlights/**")
+                        .hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(api + "/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
@@ -67,6 +75,11 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
+        return CookieCsrfTokenRepository.withHttpOnlyFalse();
     }
 
     @Bean

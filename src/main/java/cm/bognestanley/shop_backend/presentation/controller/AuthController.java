@@ -2,6 +2,7 @@ package cm.bognestanley.shop_backend.presentation.controller;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 
 import cm.bognestanley.shop_backend.infrastructure.security.AuthCookieService;
@@ -18,7 +20,6 @@ import cm.bognestanley.shop_backend.presentation.dto.request.user.RegisterUserRe
 import cm.bognestanley.shop_backend.presentation.dto.response.common.ResponseDataWrapper;
 import cm.bognestanley.shop_backend.presentation.dto.response.user.AuthResponse;
 import cm.bognestanley.shop_backend.presentation.dto.response.user.AuthenticatedSession;
-import cm.bognestanley.shop_backend.presentation.dto.response.user.CsrfTokenResponse;
 import cm.bognestanley.shop_backend.presentation.facade.AuthFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +29,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,14 +41,20 @@ public class AuthController {
 
     private final AuthFacade authFacade;
     private final AuthCookieService authCookieService;
+    private final CookieCsrfTokenRepository csrfTokenRepository;
 
     @GetMapping("/csrf")
     @Operation(summary = "Obtain a CSRF token for cookie-authenticated browser requests")
-    public ResponseEntity<ResponseDataWrapper<CsrfTokenResponse>> csrf(CsrfToken csrfToken) {
-        return ResponseEntity.ok(ResponseDataWrapper.ok(
-                new CsrfTokenResponse(csrfToken.getToken(), csrfToken.getHeaderName()),
-                "CSRF_TOKEN_RETRIEVED",
-                "CSRF token retrieved"));
+    public ResponseEntity<Void> csrf(HttpServletRequest request, HttpServletResponse response) {
+        CsrfToken csrfToken = csrfTokenRepository.loadToken(request);
+        if (csrfToken == null) {
+            csrfToken = csrfTokenRepository.generateToken(request);
+        }
+        csrfTokenRepository.saveToken(csrfToken, request, response);
+
+        return ResponseEntity.noContent()
+                .cacheControl(CacheControl.noStore())
+                .build();
     }
 
     @PostMapping("/register")
